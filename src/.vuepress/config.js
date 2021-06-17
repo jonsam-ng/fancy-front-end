@@ -45,7 +45,7 @@ module.exports = {
       },
       {
         text: "Github",
-        link: "#",
+        link: "https://github.com/jonsam-ng/react-source-reading",
       },
     ],
     sidebar: [
@@ -53,7 +53,6 @@ module.exports = {
         title: "开始上手",
         collapsable: false,
         path: "/source/",
-        children: ["README"],
       },
       {
         title: "任务调度",
