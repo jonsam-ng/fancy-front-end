@@ -1,0 +1,23 @@
+{
+  "name": "react-source-reading",
+  "version": "0.0.1",
+  "description": "react 16.8.6 源码解析笔记",
+  "main": "index.js",
+  "authors": {
+    "name": "jonsam",
+    "email": "jonsam.ng@foxmail.com"
+  },
+  "repository": "/react-source-reading",
+  "scripts": {
+    "dev": "vuepress dev src",
+    "build": "vuepress build src"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@vuepress/plugin-nprogress": "^1.8.2",
+    "@vuepress/plugin-pwa": "^1.8.2",
+    "vuepress": "^1.5.3",
+    "vuepress-plugin-global-toc": "^1.1.0",
+    "vuepress-plugin-reading-time": "^0.1.1"
+  }
+}
