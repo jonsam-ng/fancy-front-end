@@ -1,4 +1,36 @@
 const { description } = require("../../package");
+const reactPath = '/react';
+
+const sidebar = {
+  react: [
+      {
+        title: "开始上手",
+        collapsable: false,
+        path: `${reactPath}/`,
+      },
+      {
+        title: "任务调度",
+        collapsable: false,
+        path: `${reactPath}/schedule/`,
+        sidebarDepth: 1,
+        children: [`${reactPath}/schedule/scheduleWork`],
+      },
+      {
+        title: "创建更新",
+        collapsable: false,
+        path: `${reactPath}/render/`,
+        sidebarDepth: 1,
+        children: [`${reactPath}/render/ReactDOM`],
+      },
+      {
+        title: "hooks 原理",
+        collapsable: false,
+        path: `${reactPath}/hooks/`,
+        sidebarDepth: 1,
+        children: [`${reactPath}/hooks/useState`, `${reactPath}/hooks/useEffect`],
+      },
+    ]
+}
 
 module.exports = {
   /**
@@ -40,42 +72,32 @@ module.exports = {
     logo: "/logo.png",
     nav: [
       {
-        text: "源码",
-        link: "/source/",
+        text: "React 源码",
+        ariaLabel: 'React 源码菜单',
+        items: [
+          {
+            text: '任务调度',
+            link: `${reactPath}/schedule/`,
+          },
+          {
+            text: '创建更新',
+            link: `${reactPath}/render/`,
+          },
+          {
+            text: 'hooks 原理',
+            link: `${reactPath}/hooks/`,
+          }
+        ]
       },
       {
         text: "Github",
         link: "https://github.com/jonsam-ng/react-source-reading",
       },
     ],
-    sidebar: [
-      {
-        title: "开始上手",
-        collapsable: false,
-        path: "/source/",
-      },
-      {
-        title: "任务调度",
-        collapsable: false,
-        path: "/source/schedule/",
-        sidebarDepth: 1,
-        children: ["/source/schedule/scheduleWork"],
-      },
-      {
-        title: "创建更新",
-        collapsable: false,
-        path: "/source/render/",
-        sidebarDepth: 1,
-        children: ["/source/render/ReactDOM.render"],
-      },
-      {
-        title: "hooks 原理",
-        collapsable: false,
-        path: "/source/hooks/",
-        sidebarDepth: 1,
-        children: ["/source/hooks/useState", "/source/hooks/useEffect"],
-      },
-    ],
+    sidebar: {
+       collapsable: false,
+      '/react/': sidebar.react,
+    },
   },
 
   /**
