@@ -20,7 +20,7 @@ const sidebar = {
         collapsable: false,
         path: `${reactPath}/render/`,
         sidebarDepth: 1,
-        children: [`${reactPath}/render/ReactDOM`],
+        children: [`${reactPath}/render/ReactDOM.render`],
       },
       {
         title: "hooks 原理",
