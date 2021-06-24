@@ -1,4 +1,7 @@
 const { description } = require("../../package");
+// root 
+const base = '/fe-source-reading/';
+// React 源码目录
 const reactPath = '/react';
 
 const sidebar = {
@@ -37,6 +40,7 @@ module.exports = {
    * Ref：https://v1.vuepress.vuejs.org/config/#title
    */
   title: "React 源码阅读笔记",
+  base,
   /**
    * Ref：https://v1.vuepress.vuejs.org/config/#description
    */
@@ -69,7 +73,7 @@ module.exports = {
     docsDir: "",
     editLinkText: "",
     lastUpdated: false,
-    logo: "/logo.png",
+    logo: '/logo.png',
     nav: [
       {
         text: "React 源码",
@@ -98,6 +102,11 @@ module.exports = {
        collapsable: false,
       '/react/': sidebar.react,
     },
+    head: [
+        ['meta', { name: 'theme-color', content: '#f08d49' }],
+        ['meta', { name: 'apple-mobile-web-app-capable', content: 'yes' }],
+        ['meta', { name: 'apple-mobile-web-app-status-bar-style', content: 'black' }],
+    ]
   },
 
   /**

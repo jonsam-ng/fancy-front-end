@@ -3,7 +3,7 @@ home: true
 heroImage: ./hero.png
 tagline: react 16.8.6 源码解析笔记
 actionText: 开始阅读 →
-actionLink: /source/
+actionLink: /react/
 features:
 - title: 任务调度
   details: 更新任务是如何调度的？
