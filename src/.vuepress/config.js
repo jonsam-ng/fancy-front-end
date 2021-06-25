@@ -6,30 +6,51 @@ const reactPath = '/react';
 
 const sidebar = {
   react: [
-      {
+    {
         title: "开始上手",
         collapsable: false,
         path: `${reactPath}/`,
-      },
-      {
-        title: "任务调度",
+    },
+    {
+        title: "基础",
         collapsable: false,
-        path: `${reactPath}/schedule/`,
-        sidebarDepth: 1,
-        children: [`${reactPath}/schedule/scheduleWork`],
+        path: `${reactPath}/basic/`,
+        sidebarDepth: 2,
+        children: [`${reactPath}/basic/ReactElement`],
+    },
+     {
+        title: "调和（Reconciliation）",
+        collapsable: false,
+        path: `${reactPath}/reconciliation/`,
+        sidebarDepth: 2,
+        children: [],
+    },
+     {
+        title: "调度器（Scheduler）",
+        collapsable: false,
+        path: `${reactPath}/scheduler/`,
+        sidebarDepth: 2,
+        children: [`${reactPath}/scheduler/scheduleWork`],
+    },
+       {
+        title: "更新器（Updater）",
+        collapsable: false,
+        path: `${reactPath}/updater/`,
+        sidebarDepth: 2,
+        children: [],
       },
-      {
-        title: "创建更新",
+    {
+        title: "渲染器（Render）",
         collapsable: false,
         path: `${reactPath}/render/`,
-        sidebarDepth: 1,
+        sidebarDepth: 2,
         children: [`${reactPath}/render/ReactDOM.render`],
       },
       {
         title: "hooks 原理",
         collapsable: false,
         path: `${reactPath}/hooks/`,
-        sidebarDepth: 1,
+        sidebarDepth: 2,
         children: [`${reactPath}/hooks/useState`, `${reactPath}/hooks/useEffect`],
       },
     ]
@@ -95,7 +116,7 @@ module.exports = {
       },
       {
         text: "Github",
-        link: "https://github.com/jonsam-ng/react-source-reading",
+        link: "https://github.com/jonsam-ng/fe-source-reading",
       },
     ],
     sidebar: {

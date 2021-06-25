@@ -12,8 +12,8 @@ react 源码的阅读是很久之前的一项计划，读这个源码需要花�
 | IDE           | VScode                                                          |
 | 静态生成器    | VuePress                                                        |
 | 源码 Repo     | https://github.com/jonsam-ng/ReactSourceCodeAnalyze.git         |
-| 笔记源码 Repo |                                                                 |
-| 笔记地址      |                                                                 |
+| 笔记源码 Repo | https://github.com/jonsam-ng/fe-source-reading                  |
+| 笔记地址      | https://jonsam-ng.github.io/fe-source-reading/                  |
 | 阅读重点      | React 调度、更新的过程，diff 原理，重要的数据结构、hooks 原理等 |
 | 阅读方式      | 运行源码、源码标注、笔记分析总结                                |
 
@@ -33,6 +33,29 @@ yarn start
 ## 工具链接
 
 - [React 官网](https://reactjs.org/docs/getting-started.html)
+
+## TODO 
+
+### Basic 
+
+- [ ]React Element
+- [ ]React Children
+
+
+### Reconciliation
+
+### Scheduler
+
+### Updater
+
+## Render
+
+## Hooks
+
+## Summary
+
+- [ ]React 总体流程分析
+- [ ]React 中的数据结构总结
 
 ## 目录
 
