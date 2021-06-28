@@ -1,4 +1,6 @@
-# ReactElement 原理
+# ReactElement
+
+[[TOC]]
 
 ## JSX
 
@@ -77,7 +79,7 @@ React.createElement("div", {
 }
 ```
 
-这就是 react 中所谓的 fiber（纤维）。线面我们来看下createElement的代码实现：
+_owner 就是 react 中所谓的 fiber（纤维）。线面我们来看下createElement的代码实现：
 
 ```js
 // 根据元素类型 type，元素属性 config 和元素子节点（数组） children 创建 react 元素
@@ -180,3 +182,35 @@ const ReactElement = function (type, key, ref, self, source, owner, props) {
 };
 ```
 
+- `$$typeof`: 这是一个常量，是 react 元素的标志，react 的元素都会带有这个属性。普通的 react 元素 `$$typeof` 的值一般都是 `REACT_ELEMENT_TYPE`，但是也有特殊，比如 通过 `ReactDOM.createPortals(child, container)` 创建的 portal 元素的值为 `ReactDOM.createPortals(child, container)`。
+- type：DOM 元素的类型，如 'div'。
+- key：列表元素的唯一标志。
+- ref：组件引用变量。
+- props：元素属性，包括默认属性、用户定义属性和子元素 children。
+- _owner：即 fiber。表示钙元素所从属的 fiber 实例。
+
+### isValidElement
+
+```js
+// 校验是否是合法元素，只需要校验类型，重点是判断.$$typeof属性
+export function isValidElement(object) {
+  return (
+    typeof object === 'object' &&
+    object !== null &&
+    // $$typeof是组件的属性，本质是Symbol,ReactElement类型是Symbol，是独有的。
+    // REACT_ELEMENT_TYPE指的就是Symbol(react.element)
+    object.$$typeof === REACT_ELEMENT_TYPE // $$typeof: Symbol(react.element)
+  );
+}
+```
+
+是合法的 ReactElement 元素的两个必要条件：
+
+- 类型是 'object'，且不是 null;
+- `$$typeof` 属性必须是 `REACT_ELEMENT_TYPE`。
+
+### 小结
+
+- createElement 方法将组件转化成 ReactElement 元素，具有 `$$typeof`、type、key、ref、props、_owner 等属性，其中 `$$typeof` 用于对 ReactElement 的类型做判断，type 和 props (包括children) 用于将 VNode 转化为真实的 DOM，key 和 ref 是组件树中必要元素，而_owner 则记录了当前所属的组件 fiber 实例，用于调和组件的渲染和卸载。
+- cloneElement 通过一个给定的 ReactElement 克隆一个 ReactElement。
+- isValidElement 判断对象是否是合法的 ReactElement。

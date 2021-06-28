@@ -1,4 +1,6 @@
 # ReactDOM.render()方法
+
+[[TOC]]
 ## ReactDOM 是什么？
 在 react-dom 包中 ReactDOM.js 里定义了 ReactDOM。大致如下：
 
@@ -22,6 +24,7 @@ const ReactDOM: Object = {
 ```
 
 ## render 方法
+
 render方法：
 
 ```ts
@@ -39,6 +42,7 @@ render(
     );
 }
 ```
+
 在root刚刚被创建时，`parentComponent`一般都为null；
 内部调用`legacyRenderSubtreeIntoContainer`方法，代码如下：
 
@@ -307,6 +311,7 @@ function updateContainer(
 ```
 
 这个方法接受了element、container、parentComponent和callback，返回一个ExpirationTime实例。它的只要作用是计算expirationTime和suspenseConfig。
+
 -  `requestCurrentSuspenseConfig()` 方法返回 `ReactCurrentBatchConfig.suspense`，即是当前 batch 的配置信息。
 
 ```ts
@@ -392,7 +397,7 @@ function updateContainerAtExpirationTime(
     callback: ? Function,
 ) {
     const current = container.current;
-	// 通过子树计算context，挂载到 container.context 或者 container.pendingContext
+  	// 通过子树计算context，挂载到 container.context 或者 container.pendingContext
     const context = getContextForSubtree(parentComponent);
     if (container.context === null) {
         container.context = context;

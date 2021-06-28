@@ -4,26 +4,29 @@ const base = '/fe-source-reading/';
 // React 源码目录
 const reactPath = '/react';
 
+// 侧边栏配置
 const sidebar = {
+  // React 源码分析
   react: [
     {
         title: "开始上手",
-        collapsable: false,
-        path: `${reactPath}/`,
+        collapsable: true,
+      path: `${reactPath}/`,
+        sidebarDepth: 1,
     },
     {
         title: "基础",
         collapsable: false,
         path: `${reactPath}/basic/`,
         sidebarDepth: 2,
-        children: [`${reactPath}/basic/ReactElement`],
+        children: [`${reactPath}/basic/ReactElement`, `${reactPath}/basic/ReactChildren`],
     },
      {
         title: "调和（Reconciliation）",
         collapsable: false,
         path: `${reactPath}/reconciliation/`,
         sidebarDepth: 2,
-        children: [],
+        children: [`${reactPath}/reconciliation/fiber`],
     },
      {
         title: "调度器（Scheduler）",
@@ -52,9 +55,59 @@ const sidebar = {
         path: `${reactPath}/hooks/`,
         sidebarDepth: 2,
         children: [`${reactPath}/hooks/useState`, `${reactPath}/hooks/useEffect`],
+    },
+      {
+        title: "总结",
+        collapsable: false,
+        path: `${reactPath}/summary/`,
+        sidebarDepth: 1,
+        children: [],
       },
-    ]
+    ],
 }
+
+// 顶部导航配置
+const nav = [
+  // React 源码
+  {
+    text: "React 源码",
+    ariaLabel: 'React 源码菜单',
+    items: [
+      {
+        text: '基础',
+        link: `${reactPath}/basic/`,
+      },
+      {
+        text: '调和（Reconciliation）',
+        link: `${reactPath}/reconciliation/`,
+      },
+      {
+        text: '调度器（Scheduler）',
+        link: `${reactPath}/scheduler/`,
+      },
+      {
+        text: '更新器（Updater）',
+        link: `${reactPath}/updater/`,
+      },
+      {
+        text: '渲染器（Render）',
+        link: `${reactPath}/render/`,
+      },
+      {
+        text: 'hooks 原理',
+        link: `${reactPath}/hooks/`,
+      },
+      {
+        text: '总结',
+        link: `${reactPath}/summary/`,
+      }
+    ]
+  },
+  {
+    text: "Github",
+    link: "https://github.com/jonsam-ng/fe-source-reading",
+  },
+];
 
 module.exports = {
   /**
@@ -95,30 +148,7 @@ module.exports = {
     editLinkText: "",
     lastUpdated: false,
     logo: '/logo.png',
-    nav: [
-      {
-        text: "React 源码",
-        ariaLabel: 'React 源码菜单',
-        items: [
-          {
-            text: '任务调度',
-            link: `${reactPath}/schedule/`,
-          },
-          {
-            text: '创建更新',
-            link: `${reactPath}/render/`,
-          },
-          {
-            text: 'hooks 原理',
-            link: `${reactPath}/hooks/`,
-          }
-        ]
-      },
-      {
-        text: "Github",
-        link: "https://github.com/jonsam-ng/fe-source-reading",
-      },
-    ],
+    nav,
     sidebar: {
        collapsable: false,
       '/react/': sidebar.react,

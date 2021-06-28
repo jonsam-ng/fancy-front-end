@@ -30,16 +30,17 @@ yarn start
 
 2. 按照一定的阅读顺序阅读源码
 
-## 工具链接
+## 参考链接
 
 - [React 官网](https://reactjs.org/docs/getting-started.html)
+- [React Fiber初探--熊建刚](https://my.oschina.net/u/3451529/blog/1583894?spm=a2c6h.12873639.0.0.1360375buUhrfF)
 
-## TODO 
+## TODO 计划
 
 ### Basic 
 
-- [ ]React Element
-- [ ]React Children
+- [x]React Element
+- [x]React Children
 
 
 ### Reconciliation
@@ -48,11 +49,11 @@ yarn start
 
 ### Updater
 
-## Render
+### Render
 
-## Hooks
+### Hooks
 
-## Summary
+### Summary
 
 - [ ]React 总体流程分析
 - [ ]React 中的数据结构总结

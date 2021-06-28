@@ -27,7 +27,7 @@ useState, // 响应式的组件状态管理
 ```
 我们先来看 useState 的原理。
 
-## dispatcher 调度器
+## dispatcher 分发器
 ### 定义
 所有的 hooks 从 react 包中 ReactHooks.js 导出定义，useState 定义如下：
 
@@ -43,11 +43,11 @@ function useState < S > (initialState: (() => S) | S) {
 2. 所有的 hook 都需要经过 resolveDispatcher 返回的 dispatcher 来调度执行和更新。
 
 ### dispatcher 是什么？如何生成的？
-先来看 `resolveDispatcher`这个函数，这个函数负责找到当前的调度器，ReactCurrentDispatcher 用来追踪当前的调度器：
+先来看 `resolveDispatcher`这个函数，这个函数负责找到当前的分发器，ReactCurrentDispatcher 用来追踪当前的分发器：
 ```js
 const dispatcher = ReactCurrentDispatcher.current;
 ```
-如果找不到调度器，就会报我们使用 hook 最常见的错误：
+如果找不到分发器，就会报我们使用 hook 最常见的错误：
 ```txt
 Invalid hook call. Hooks can only be called inside of the body of a function component.
 ```
@@ -100,7 +100,7 @@ type Dispatcher = {
 };
 ```
 可见所有的 hook 都是由 dispatcher 来调度执行的。那么 dispatcher 只有一种吗？dispatcher 不止以一种，包括 ContextOnlyDispatcher、HooksDispatcherOnMount、HooksDispatcherOnUpdate 三种，还有一些 dev 环境的 dispatcher。
-可以把 dispatcher 看做是一个 hook 的调度器，在不同的渲染阶段由不同的调度器来进行调度。那么不同的调度器有什么区别呢？我们来看一下这三种调度器：
+可以把 dispatcher 看做是一个 hook 的分发器，在不同的渲染阶段由不同的分发器来进行调度。那么不同的分发器有什么区别呢？我们来看一下这三种分发器：
 ```js
 export const ContextOnlyDispatcher: Dispatcher = {
     readContext,
@@ -150,7 +150,7 @@ const HooksDispatcherOnUpdate: Dispatcher = {
     useResponder: createResponderListener,
 };
 ```
-可见调度器的区别在于 hook 的实例是不同的，ContextOnlyDispatcher 中直接报 `Invalid hook call` 的错误，HooksDispatcherOnMount 中是 Mount 阶段的 hook，而HooksDispatcherOnUpdate 中是 update 阶段的 hook。一个很明显的区别就是 HooksDispatcherOnMount 中的 hook 会做一些初始化、初始值的操作，而 HooksDispatcherOnUpdate 中的 hook 主要做一些更新的操作。
+可见分发器的区别在于 hook 的实例是不同的，ContextOnlyDispatcher 中直接报 `Invalid hook call` 的错误，HooksDispatcherOnMount 中是 Mount 阶段的 hook，而HooksDispatcherOnUpdate 中是 update 阶段的 hook。一个很明显的区别就是 HooksDispatcherOnMount 中的 hook 会做一些初始化、初始值的操作，而 HooksDispatcherOnUpdate 中的 hook 主要做一些更新的操作。
 
 ### 当前的 dispatcher 是什么？dispatcher 是如何调度的？
 
