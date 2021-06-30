@@ -12,14 +12,14 @@ const sidebar = {
         title: "开始上手",
         collapsable: true,
       path: `${reactPath}/`,
-        sidebarDepth: 1,
+      sidebarDepth: 1,
     },
     {
         title: "基础",
         collapsable: false,
         path: `${reactPath}/basic/`,
         sidebarDepth: 2,
-        children: [`${reactPath}/basic/ReactElement`, `${reactPath}/basic/ReactChildren`],
+        children: [`${reactPath}/basic/chapter`, `${reactPath}/basic/ReactElement`, `${reactPath}/basic/ReactChildren`],
     },
      {
         title: "调和（Reconciliation）",
@@ -70,7 +70,7 @@ const sidebar = {
 const nav = [
   // React 源码
   {
-    text: "React 源码",
+    text: "🍇 React 源码",
     ariaLabel: 'React 源码菜单',
     items: [
       {
@@ -104,7 +104,7 @@ const nav = [
     ]
   },
   {
-    text: "Github",
+    text: "🍈 Github",
     link: "https://github.com/jonsam-ng/fe-source-reading",
   },
 ];

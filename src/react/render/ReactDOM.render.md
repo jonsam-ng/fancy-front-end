@@ -1,4 +1,4 @@
-# ReactDOM.render()方法
+# ReactDOM.render 方法
 
 [[TOC]]
 ## ReactDOM 是什么？

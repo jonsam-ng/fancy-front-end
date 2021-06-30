@@ -28,12 +28,14 @@ yarn
 yarn start
 ```
 
-2. 按照一定的阅读顺序阅读源码
+2. 按照一定的阅读顺序阅读源码，请先阅读基础部分。
 
 ## 参考链接
 
 - [React 官网](https://reactjs.org/docs/getting-started.html)
 - [React Fiber初探--熊建刚](https://my.oschina.net/u/3451529/blog/1583894?spm=a2c6h.12873639.0.0.1360375buUhrfF)
+- [7kms/react-illustration-series](https://github.com/7kms/react-illustration-series)
+- [React 源码阅读系列文章](https://www.zhihu.com/column/c_1203007131219533824)
 
 ## TODO 计划
 
@@ -45,11 +47,23 @@ yarn start
 
 ### Reconciliation
 
+- []fiber 与 reconciliation
+- []expirationTime与优先级
+
 ### Scheduler
+
+- []调度优先级的计算
+- [x]scheduleWork与任务调度
+- []更新队列（UpdateQueue）
 
 ### Updater
 
 ### Render
+
+- []创建更新
+- []调度更新
+- []执行更新
+- []提交更新
 
 ### Hooks
 
