@@ -273,7 +273,7 @@ type BaseFiberRootProperties = {
 };
 ```
 
-![[fiberRoot 结构图.png]]
+![fiberRoot 结构图](/assets/img/fiberRoot%20结构图.png)
 
 FiberRoot数据结构归结如下：
 

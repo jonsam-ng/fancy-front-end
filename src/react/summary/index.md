@@ -4,7 +4,7 @@
 
 下面是 react 是4个核心包的调度关系。
 
-![react内核3个包的主要职责和调用关系图](/assets/img/core-packages.png)
+![react内核3个包的主要职责和调用关系图](./assets/img/core-packages.png)
 
 ## 核心包
 

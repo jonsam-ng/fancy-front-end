@@ -369,6 +369,8 @@ function createWorkInProgress(
 
 ### FiberRoot 的定义
 
+在 react-reconciler 包中 ReactFiberRoot.js 文件中可以看到 FiberRoot 有如下定义：
+
 ```js
 export type FiberRoot = {
   ...BaseFiberRootProperties,
