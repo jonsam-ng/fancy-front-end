@@ -381,3 +381,115 @@ export type FiberRoot = {
 
 我们主要来看下 BaseFiberRootProperties。
 
+```js
+type BaseFiberRootProperties = {|
+  // The type of root (legacy, batched, concurrent, etc.)
+  // fiberRoot 的类型
+  // export type RootTag = 0 | 1 | 2;
+  // export const LegacyRoot = 0;
+  // export const BatchedRoot = 1;
+  // export const ConcurrentRoot = 2;
+  tag: RootTag,
+
+  // Any additional information from the host associated with this root.
+  // 与根节点相关的容器信息
+  containerInfo: any,
+  // Used only by persistent updates.
+  pendingChildren: any,
+  // The currently active root fiber. This is the mutable root of the tree.
+  // 当前容器中激活的 Fiber 对象
+  current: Fiber,
+
+  pingCache:
+    | WeakMap<Thenable, Set<ExpirationTime>>
+    | Map<Thenable, Set<ExpirationTime>>
+    | null,
+  // 将被 commit 的 fiber 的到期时间
+  finishedExpirationTime: ExpirationTime,
+  // A finished work-in-progress HostRoot that's ready to be committed.
+  // 将被 commit 的 Fiber（HostRoot）
+  finishedWork: Fiber | null,
+  // Timeout handle returned by setTimeout. Used to cancel a pending timeout, if
+  // it's superseded by a new one.
+  timeoutHandle: TimeoutHandle | NoTimeout,
+  // Top context object, used by renderSubtreeIntoContainer
+  // 顶级的 context 对象
+  context: Object | null,
+  pendingContext: Object | null,
+  // Determines if we should attempt to hydrate on the initial mount
+  // 是否需要在初次渲染时进行hydrate
+  +hydrate: boolean,
+  // List of top-level batches. This list indicates whether a commit should be
+  // deferred. Also contains completion callbacks.
+  // TODO: Lift this into the renderer
+  firstBatch: Batch | null,
+  // Node returned by Scheduler.scheduleCallback
+  callbackNode: *,
+  // Expiration of the callback associated with this root
+  // callback 的超时时间
+  callbackExpirationTime: ExpirationTime,
+  // Priority of the callback associated with this root
+  callbackPriority: ReactPriorityLevel,
+  // The earliest pending expiration time that exists in the tree
+  firstPendingTime: ExpirationTime,
+  // The earliest suspended expiration time that exists in the tree
+  firstSuspendedTime: ExpirationTime,
+  // The latest suspended expiration time that exists in the tree
+  lastSuspendedTime: ExpirationTime,
+  // The next known expiration time after the suspended range
+  nextKnownPendingLevel: ExpirationTime,
+  // The latest time at which a suspended component pinged the root to
+  // render again
+  lastPingedTime: ExpirationTime,
+  lastExpiredTime: ExpirationTime,
+|};
+
+// FiberRootNode 工厂函数
+function FiberRootNode(containerInfo, tag, hydrate) {
+  this.tag = tag;
+  this.current = null;
+  this.containerInfo = containerInfo;
+  this.pendingChildren = null;
+  this.pingCache = null;
+  this.finishedExpirationTime = NoWork;
+  this.finishedWork = null;
+  this.timeoutHandle = noTimeout;
+  this.context = null;
+  this.pendingContext = null;
+  this.hydrate = hydrate;
+  this.firstBatch = null;
+  this.callbackNode = null;
+  this.callbackPriority = NoPriority;
+  this.firstPendingTime = NoWork;
+  this.firstSuspendedTime = NoWork;
+  this.lastSuspendedTime = NoWork;
+  this.nextKnownPendingLevel = NoWork;
+  this.lastPingedTime = NoWork;
+  this.lastExpiredTime = NoWork;
+}
+```
+
+### 创建 FiberRoot 
+
+FiberRoot 由函数 createFiberRoot 创建。
+
+```js
+function createFiberRoot(
+  // 容器信息
+  containerInfo: any,
+  // FiberRoot 的类型
+  tag: RootTag,
+  hydrate: boolean,
+  hydrationCallbacks: null | SuspenseHydrationCallbacks,
+): FiberRoot {
+  const root: FiberRoot = (new FiberRootNode(containerInfo, tag, hydrate): any);
+  // 创建 HostFiberRoot，可见 HostFiberRoot 是 挂载到 FiberRoot.current 上面的
+  const uninitializedFiber = createHostRootFiber(tag);
+  root.current = uninitializedFiber;
+  // 将 FiberRoot 挂载到 HostFiberRoot.stateNode 上。
+  uninitializedFiber.stateNode = root;
+
+  return root;
+}
+```
+

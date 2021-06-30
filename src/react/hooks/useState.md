@@ -456,7 +456,7 @@ function dispatchAction < S, A > (
 -  scheduleWork(fiber, expirationTime) 会调度 fiber 的更新。
 -  react update 数据结构图如下图。
 
-![react update 数据结构.png](/assets/img/react%20update%20数据结构.png)
+<img :src="$withBase('/assets/img/react%20update%20数据结构.png')" alt="react update 数据结构.png">
 
 update 对象是如何处理的？
 
@@ -735,7 +735,7 @@ function reducer(state, action): state // 本质上是一个状态转换器
 
 - updateReducer 结构图：
 
-![updateReducer 结构图￼](/assets/img/updateReducer%20结构图￼.png)
+<img :src="$withBase('/assets/img/updateReducer%20结构图.png')" alt="updateReducer 结构图">
 
 ## 一些问题
 

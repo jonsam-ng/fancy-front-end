@@ -273,7 +273,7 @@ type BaseFiberRootProperties = {
 };
 ```
 
-![fiberRoot 结构图](/assets/img/fiberRoot%20结构图.png)
+<img :src="$withBase('/assets/img/fiberRoot%20结构图.png')" alt="fiberRoot 结构图">
 
 FiberRoot数据结构归结如下：
 
