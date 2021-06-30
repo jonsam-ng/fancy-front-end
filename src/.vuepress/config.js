@@ -171,11 +171,4 @@ module.exports = {
     "vuepress-plugin-reading-time",
     "vuepress-plugin-global-toc",
   ],
-  // configureWebpack: {
-  //   resolve: {
-  //     alias: {
-  //       '@assets': 'src/.vuepress/public/assets/*'
-  //     }
-  //   }
-  // }
 };
