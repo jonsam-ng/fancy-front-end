@@ -267,5 +267,9 @@ function useFiber(
 
 这个函数是对单一 portal 元素进行调和。原理与 `reconcileSingleElement` 相似，不再赘述。
 
+### reconcileSingleTextNode
+
+这个函数对
+
 
 ## mountChildFibers
