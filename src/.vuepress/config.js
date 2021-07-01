@@ -1,5 +1,5 @@
 const { description } = require("../../package");
-// root
+// root：custom github domain and donot need base.
 const base = "/fe-source-reading/";
 // React 源码目录
 const reactPath = "/react";
@@ -121,6 +121,10 @@ const nav = [
   {
     text: "🍈 Github",
     link: "https://github.com/jonsam-ng/fe-source-reading",
+  },
+  {
+    text: "🍓 博客",
+    link: "https://www.jonsam.site",
   },
 ];
 

@@ -13,7 +13,7 @@ react 源码的阅读是很久之前的一项计划，读这个源码需要花�
 | 静态生成器    | VuePress                                                        |
 | 源码 Repo     | https://github.com/jonsam-ng/ReactSourceCodeAnalyze.git         |
 | 笔记源码 Repo | https://github.com/jonsam-ng/fe-source-reading                  |
-| 笔记地址      | https://jonsam-ng.github.io/fe-source-reading/                  |
+| 笔记地址      | https://source.jonsam.site                                      |
 | 阅读重点      | React 调度、更新的过程，diff 原理，重要的数据结构、hooks 原理等 |
 | 阅读方式      | 运行源码、源码标注、笔记分析总结                                |
 
