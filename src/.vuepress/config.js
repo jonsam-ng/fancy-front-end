@@ -1,107 +1,122 @@
 const { description } = require("../../package");
-// root 
-const base = '/fe-source-reading/';
+// root
+const base = "/fe-source-reading/";
 // React 源码目录
-const reactPath = '/react';
+const reactPath = "/react";
 
 // 侧边栏配置
 const sidebar = {
   // React 源码分析
   react: [
     {
-        title: "开始上手",
-        collapsable: true,
+      title: "开始上手",
+      collapsable: true,
       path: `${reactPath}/`,
       sidebarDepth: 1,
     },
     {
-        title: "基础",
-        collapsable: false,
-        path: `${reactPath}/basic/`,
-        sidebarDepth: 2,
-        children: [`${reactPath}/basic/chapter`, `${reactPath}/basic/ReactElement`, `${reactPath}/basic/ReactChildren`],
+      title: "基础",
+      collapsable: false,
+      path: `${reactPath}/basic/`,
+      sidebarDepth: 2,
+      children: [
+        `${reactPath}/basic/chapter`,
+        `${reactPath}/basic/ReactElement`,
+        `${reactPath}/basic/ReactChildren`,
+      ],
     },
-     {
-        title: "调和（Reconciliation）",
-        collapsable: false,
-        path: `${reactPath}/reconciliation/`,
-        sidebarDepth: 2,
-        children: [`${reactPath}/reconciliation/fiber`],
-    },
-     {
-        title: "调度器（Scheduler）",
-        collapsable: false,
-        path: `${reactPath}/scheduler/`,
-        sidebarDepth: 2,
-        children: [`${reactPath}/scheduler/scheduleWork`],
-    },
-       {
-        title: "更新器（Updater）",
-        collapsable: false,
-        path: `${reactPath}/updater/`,
-        sidebarDepth: 2,
-        children: [],
-      },
     {
-        title: "渲染器（Render）",
-        collapsable: false,
-        path: `${reactPath}/render/`,
-        sidebarDepth: 2,
-        children: [`${reactPath}/render/ReactDOM.render`],
-      },
-      {
-        title: "hooks 原理",
-        collapsable: false,
-        path: `${reactPath}/hooks/`,
-        sidebarDepth: 2,
-        children: [`${reactPath}/hooks/useState`, `${reactPath}/hooks/useEffect`],
+      title: "调和（Reconciliation）",
+      collapsable: false,
+      path: `${reactPath}/reconciliation/`,
+      sidebarDepth: 2,
+      children: [
+        `${reactPath}/reconciliation/fiber`,
+        `${reactPath}/reconciliation/reactChildFiber`,
+        `${reactPath}/reconciliation/expirationTime`,
+      ],
     },
-      {
-        title: "总结",
-        collapsable: false,
-        path: `${reactPath}/summary/`,
-        sidebarDepth: 1,
-        children: [],
-      },
-    ],
-}
+    {
+      title: "调度器（Scheduler）",
+      collapsable: false,
+      path: `${reactPath}/scheduler/`,
+      sidebarDepth: 2,
+      children: [`${reactPath}/scheduler/scheduleWork`],
+    },
+    {
+      title: "更新器（Updater）",
+      collapsable: false,
+      path: `${reactPath}/updater/`,
+      sidebarDepth: 2,
+      children: [],
+    },
+    {
+      title: "渲染器（Render）",
+      collapsable: false,
+      path: `${reactPath}/render/`,
+      sidebarDepth: 2,
+      children: [`${reactPath}/render/ReactDOM.render`],
+    },
+    {
+      title: "更新过程",
+      collapsable: false,
+      path: `${reactPath}/update/`,
+      sidebarDepth: 2,
+      children: [],
+    },
+    {
+      title: "hooks 原理",
+      collapsable: false,
+      path: `${reactPath}/hooks/`,
+      sidebarDepth: 2,
+      children: [`${reactPath}/hooks/useState`, `${reactPath}/hooks/useEffect`],
+    },
+    {
+      title: "总结",
+      collapsable: false,
+      path: `${reactPath}/summary/`,
+      sidebarDepth: 1,
+      children: [],
+    },
+  ],
+};
 
 // 顶部导航配置
 const nav = [
   // React 源码
   {
     text: "🍇 React 源码",
-    ariaLabel: 'React 源码菜单',
+    ariaLabel: "React 源码菜单",
     items: [
       {
-        text: '基础',
+        text: "基础",
         link: `${reactPath}/basic/`,
       },
       {
-        text: '调和（Reconciliation）',
+        text: "调和（Reconciliation）",
         link: `${reactPath}/reconciliation/`,
       },
       {
-        text: '调度器（Scheduler）',
+        text: "调度器（Scheduler）",
         link: `${reactPath}/scheduler/`,
       },
       {
-        text: '更新器（Updater）',
+        text: "更新器（Updater）",
         link: `${reactPath}/updater/`,
       },
       {
-        text: '渲染器（Render）',
+        text: "渲染器（Render）",
         link: `${reactPath}/render/`,
       },
       {
-        text: 'hooks 原理',
+        text: "hooks 原理",
         link: `${reactPath}/hooks/`,
       },
       {
-        text: '总结',
+        text: "总结",
         link: `${reactPath}/summary/`,
-      }
-    ]
+      },
+    ],
   },
   {
     text: "🍈 Github",
@@ -147,17 +162,20 @@ module.exports = {
     docsDir: "",
     editLinkText: "",
     lastUpdated: false,
-    logo: '/logo.png',
+    logo: "/logo.png",
     nav,
     sidebar: {
-       collapsable: false,
-      '/react/': sidebar.react,
+      collapsable: false,
+      "/react/": sidebar.react,
     },
     head: [
-        ['meta', { name: 'theme-color', content: '#f08d49' }],
-        ['meta', { name: 'apple-mobile-web-app-capable', content: 'yes' }],
-        ['meta', { name: 'apple-mobile-web-app-status-bar-style', content: 'black' }],
-    ]
+      ["meta", { name: "theme-color", content: "#f08d49" }],
+      ["meta", { name: "apple-mobile-web-app-capable", content: "yes" }],
+      [
+        "meta",
+        { name: "apple-mobile-web-app-status-bar-style", content: "black" },
+      ],
+    ],
   },
 
   /**

@@ -493,3 +493,43 @@ function createFiberRoot(
 }
 ```
 
+由此可见：
+
+- double buffering pooling technique：这里运用了双缓冲技术，从 FiberRoot 可以获取到 HostFiberRoot 的 Fiber 信息，同时从 HostFiberRoot 也可以获取到 FiberRoot 的容器信息。这样当 HostFiberRoot 需要回退时，可以及时的从 FiberRoot 恢复信息。
+- FiberRoot 可以看做是真个 FiberTree 的一个容器，记载着一些容器信息和即将被 Commit 的 HostFiberRoot 的信息；HostFiberRoot 才是真正的 FiberTree 的根节点。
+
+## HostFiberRoot
+
+HostFiberRoot 本质上是 Fiber，是 FiberTree 的根节点。
+
+创建 HostFiberRoot 代码如下：
+
+```js
+function createHostRootFiber(tag: RootTag): Fiber {
+  let mode;
+  if (tag === ConcurrentRoot) {
+    mode = ConcurrentMode | BatchedMode | StrictMode;
+  } else if (tag === BatchedRoot) {
+    mode = BatchedMode | StrictMode;
+  } else {
+    mode = NoMode;
+  }
+
+  return createFiber(HostRoot, null, null, mode);
+}
+```
+
+- 调用 createFiber 创建 HostFiberRoot，说明 HostFiberRoot 本质上还是 Fiber，只是 Fiber 被标记为了 HostRoot。
+
+## ReactChildFiber
+
+在生成 FiberRoot 和 HostFiberRoot 之后，还需要为子组件生成各自的子 fiber。这部分在 react-reconciler 包中 ReactChildFiber.js 文件中实现。这个过程大致分为两步：
+
+```js
+// 调和 ReactChildFiber
+export const reconcileChildFibers = ChildReconciler(true);
+// 挂载 ReactChildFiber
+export const mountChildFibers = ChildReconciler(false);
+```
+
+这部分较为复杂，之后详解。在更新器章节，还会用到这里的内容。

@@ -36,6 +36,7 @@ yarn start
 - [React Fiber初探--熊建刚](https://my.oschina.net/u/3451529/blog/1583894?spm=a2c6h.12873639.0.0.1360375buUhrfF)
 - [7kms/react-illustration-series](https://github.com/7kms/react-illustration-series)
 - [React 源码阅读系列文章](https://www.zhihu.com/column/c_1203007131219533824)
+- [React 源码解析](https://react.jokcy.me/)
 
 ## TODO 计划
 
@@ -47,7 +48,8 @@ yarn start
 
 ### Reconciliation
 
-- []fiber 与 reconciliation
+- [x]fiber 与 reconciliation
+- []ReactChildFiber 的创建
 - []expirationTime与优先级
 
 ### Scheduler
