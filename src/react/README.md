@@ -49,8 +49,9 @@ yarn start
 ### Reconciliation
 
 - [x]fiber 与 reconciliation
-- []ReactChildFiber 的创建
+- [x]ReactChildFiber 的创建
 - []expirationTime与优先级
+- []调和章节总结
 
 ### Scheduler
 
@@ -69,11 +70,19 @@ yarn start
 
 ### Hooks
 
+- [x]useState
+- [x]useEffect
+- []useReducer
+- []useRef
+- []useContext
+
 ### Summary
 
-- [ ]React 总体流程分析
-- [ ]React 中的数据结构总结
-
+- [x]React 总体流程分析
+- []React 中的数据结构总结
+- []新版本中 lanes 在优先级上所做的更改。
+- []事件优先级
+  
 ## 目录
 
 <GlobalTableOfContents />

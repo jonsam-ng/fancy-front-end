@@ -2,7 +2,7 @@
 
 [[TOC]]
 
-ReactChildFiber 的创建过程分为调和和挂载两个部分。这两个部分都调用了 `ChildReconciler` 这个函数。这个函数比较复杂，我们分解来看。
+ReactChildFiber 的创建过程分为调和和挂载两种过程。这两个过程都调用了 `ChildReconciler` 这个函数。这个函数比较复杂，我们分解来看。
 
 ```js
 export const reconcileChildFibers = ChildReconciler(true);
@@ -14,6 +14,10 @@ export const mountChildFibers = ChildReconciler(false);
 ChildReconciler(shouldTrackSideEffects)。
 
 ChildReconciler 返回函数 reconcileChildFibers，根据传入参数 shouldTrackSideEffects 的值不同，分别起到了调和和挂载的功能。执行 reconcileChildFibers 将返回创建或者更新的 fiber。
+
+- mount 阶段：shouldTrackSideEffects 为 false，不需要追踪副作用，因为所有的副作用都执行一遍。
+- render 阶段：shouldTrackSideEffects 为 true，需要追踪副作用并在适当的时机执行。
+- 根据 shouldTrackSideEffects 这个值我们就可以判断当前的代码是运行在 mount 阶段还是 render 阶段。
 
 先来看看 reconcileChildFibers 这个函数：
 
@@ -161,7 +165,7 @@ function reconcileChildFibers(
 - 其他情况则根据是类组件还是函数组件进行报错处理。
 - placeSingleChild 为返回的 newFiber 在 shouldTrackSideEffects 为 true 时添加 "Placement" 的 effectTag 标记。
 
-### reconcileSingleElement
+## reconcileSingleElement
 
 这个函数对单一元素进行调和处理。
 
@@ -263,13 +267,489 @@ function useFiber(
 }
 ```
 
-### reconcileSinglePortal
+## reconcileSinglePortal
 
 这个函数是对单一 portal 元素进行调和。原理与 `reconcileSingleElement` 相似，不再赘述。
 
-### reconcileSingleTextNode
+## reconcileSingleTextNode
 
-这个函数对
+这个函数对文本节点进行调和。与普通节点不同的是，文本节点不用通过比较 key 值来减少 fiber 创建的损耗，只需要将原来的内容清除，创建或者更新为新的文本节点即可。
 
+```js
+function reconcileSingleTextNode(
+  returnFiber: Fiber,
+  currentFirstChild: Fiber | null,
+  textContent: string,
+  expirationTime: ExpirationTime,
+): Fiber {
+  // There's no need to check for keys on text nodes since we don't have a
+  // way to define them.
+  // 字符节点不用比较 key，只要原来 child 有值且为 HostText，就可以复用次 fiber
+  // 文本节点不用遍历兄弟节点
+  if (currentFirstChild !== null && currentFirstChild.tag === HostText) {
+    // We already have an existing node so let's just update it and delete
+    // the rest.
+    deleteRemainingChildren(returnFiber, currentFirstChild.sibling);
+    const existing = useFiber(currentFirstChild, textContent, expirationTime);
+    existing.return = returnFiber;
+    return existing;
+  }
+  // The existing first child is not a text node so we need to create one
+  // and delete the existing ones.
+  // 否则直接本剧 text 创建一个新的 fiber
+  deleteRemainingChildren(returnFiber, currentFirstChild);
+  const created = createFiberFromText(
+    textContent,
+    returnFiber.mode,
+    expirationTime,
+  );
+  created.return = returnFiber;
+  return created;
+}
+```
 
-## mountChildFibers
+可以看到，这里采用的思路是：
+
+- 如果原来就是文本节点，也就是 `currentFirstChild.tag === HostText` 时，直接删除其余的兄弟节点，并且将当前的 fiber 改造成新的文本节点，即调用 `useFiber` 函数。
+- 否则直接删除包括当前节点在内的所有节点，并且调用 `createFiberFromText` 创建新的文本节点。
+
+## reconcileChildrenArray
+
+上面讨论的都是对单一的节点进行调和，包括普通的 ReactElement 元素、string、Number、textNode 等，这里这个函数就是对上述单一元素所组成的数组进行调和。
+
+在分析函数 `reconcileChildrenArray` 之前，我们先理清楚两个概念：oldFiber 和 newChildren。oldFiber 是当前的稳定的 fiber 链表，oldFiber.sibling 指向下一个 fiber 节点，其本质上是 fiber链表。newChildren 指的是从渲染器中更新回调中新的正在更新的 ReactElement 数组，其本质上是 ReactElement 数组。在这里我们可以把两者都看作是数组进行理解。
+
+下面的 oldFiber 我将理解为 old children，其每一项是 old child；newChildren 我将理解为 old children，每一项为 new child。
+
+下面我们来来重点看下 `reconcileChildrenArray` 这个函数：
+
+```js
+ function reconcileChildrenArray(
+  returnFiber: Fiber,
+  currentFirstChild: Fiber | null,
+  newChildren: Array<*>, // newChildren 是 ReactElement 数组
+  expirationTime: ExpirationTime,
+): Fiber | null {
+
+  if (__DEV__) {
+    // First, validate keys.
+    // dev 环境下会对 key 值不合法的元素进行警告
+    let knownKeys = null;
+    for (let i = 0; i < newChildren.length; i++) {
+      const child = newChildren[i];
+      knownKeys = warnOnInvalidKey(child, knownKeys);
+    }
+  }
+
+  let resultingFirstChild: Fiber | null = null;
+  let previousNewFiber: Fiber | null = null;
+
+  let oldFiber = currentFirstChild;
+  let lastPlacedIndex = 0;
+  let newIdx = 0;
+  let nextOldFiber = null;
+  // 循环 new children 数组
+  for (; oldFiber !== null && newIdx < newChildren.length; newIdx++) {
+    // 如果 old child 的下标大于与之对等的 new child 的下标，延迟推移一次
+    if (oldFiber.index > newIdx) {
+      nextOldFiber = oldFiber;
+      // 这里将 oldFiber 置null，下面的 updateSlot 就会直接覆盖此节点位置。
+      // 但是 oldFiber 的节点内容没有丢，后面还会继续用它进行比较并复用
+      oldFiber = null;
+    } else {
+      // 循环的过程中 old children也在后移，这里是在逐位比较
+      // 到这里说明 oldFiber.index <= newIdx，由于newIdx 初始未 0，所以初始时 oldFiber.index <=0
+      // 所以 oldFiber.index === 0，此后依次推移，index 就是相对应的
+      nextOldFiber = oldFiber.sibling;
+    }
+    // 如果 key 值匹配则返回 fiber ，否则返回 null。
+    const newFiber = updateSlot(
+      returnFiber,
+      oldFiber,
+      newChildren[newIdx],
+      expirationTime,
+    );
+    // 这种情况表示遇到 key 值不匹配的问题了，表明当前的情况是更改
+    if (newFiber === null) {
+      // TODO: This breaks on empty slots like null children. That's
+      // unfortunate because it triggers the slow path all the time. We need
+      // a better way to communicate whether this was a miss or null,
+      // boolean, undefined, etc.
+      if (oldFiber === null) {
+        oldFiber = nextOldFiber;
+      }
+      // 提前跳出循环，处理更改的逻辑
+      break;
+    }
+    // 如果在更新阶段，old child 将会被移除，因为此节点不会被重用
+    // 因为 old child 已经被记载在 nextOldFiber 中，这里删除是为了防止再次被循环到
+    if (shouldTrackSideEffects) {
+      if (oldFiber && newFiber.alternate === null) {
+        // We matched the slot, but we didn't reuse the existing fiber, so we
+        // need to delete the existing child.
+        deleteChild(returnFiber, oldFiber);
+      }
+    }
+    // 放置节点
+    lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx);
+    // resultingFirstChild 将以链表的方式记录 new children 的数组
+    if (previousNewFiber === null) {
+      // TODO: Move out of the loop. This only happens for the first run.
+      resultingFirstChild = newFiber;
+    } else {
+      // TODO: Defer siblings if we're not at the right index for this slot.
+      // I.e. if we had null values before, then we want to defer this
+      // for each null value. However, we also don't want to call updateSlot
+      // with the previous one.
+      previousNewFiber.sibling = newFiber;
+    }
+    previousNewFiber = newFiber;
+    // 移动到下一个 old child
+    oldFiber = nextOldFiber;
+  }
+  // 当上面循环完毕，说明 new children 或者 old children 已经执行完了，由2种情况：old children 有剩余、new children 有剩余
+  // 分别对应的情景为：删除，增加
+  // 如果 new children 循环完了，说明 old children 有剩余，剩余的可以直接删除
+  if (newIdx === newChildren.length) {
+    // We've reached the end of the new children. We can delete the rest.
+    deleteRemainingChildren(returnFiber, oldFiber);
+    return resultingFirstChild;
+  }
+  // 如果 old children 循环完了，剩余的 new children 就可以直接照搬过来
+  if (oldFiber === null) {
+    // If we don't have any more existing children we can choose a fast path
+    // since the rest will all be insertions.
+    // 循环剩余的new children
+    for (; newIdx < newChildren.length; newIdx++) {
+      // 创建 fiber 
+      const newFiber = createChild(
+        returnFiber,
+        newChildren[newIdx],
+        expirationTime,
+      );
+      // 跳过非法的元素
+      if (newFiber === null) {
+        continue;
+      }
+      // 放置节点
+      lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx);
+      // 挂载到 resultingFirstChild 链表上
+      if (previousNewFiber === null) {
+        // TODO: Move out of the loop. This only happens for the first run.
+        resultingFirstChild = newFiber;
+      } else {
+        previousNewFiber.sibling = newFiber;
+      }
+      previousNewFiber = newFiber;
+    }
+    // 这里将处理完毕的 new children 返回
+    return resultingFirstChild;
+  }
+  // 上面两种情况都 return ，这里属于第 3 中情况：更改
+  // 更改是提前跳出的，可见更改的优先级要大于删除和增加
+  // 根据 old children 的 key 值建立一个 key 和 fiber 的映射
+  // Add all children to a key map for quick lookups.
+  const existingChildren = mapRemainingChildren(returnFiber, oldFiber);
+
+  // Keep scanning and use the map to restore deleted items as moves.
+  // 循环后面 key 值不匹配的 ne children
+  for (; newIdx < newChildren.length; newIdx++) {
+    // 试图从 map 中查找 key 值相同的 old child 以复用、
+    // updateFromMap 中会根据是否可复用选择复用或者新建 Fiber
+    const newFiber = updateFromMap(
+      existingChildren,
+      returnFiber,
+      newIdx,
+      newChildren[newIdx],
+      expirationTime,
+    );
+    // 如果找到则放入resultingFirstChild 中
+    if (newFiber !== null) {
+      if (shouldTrackSideEffects) {
+        if (newFiber.alternate !== null) {
+          // The new fiber is a work in progress, but if there exists a
+          // current, that means that we reused the fiber. We need to delete
+          // it from the child list so that we don't add it to the deletion
+          // list.
+          // 从 map 中已找到的值删除
+          existingChildren.delete(
+            newFiber.key === null ? newIdx : newFiber.key,
+          );
+        }
+      }
+      lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx);
+      if (previousNewFiber === null) {
+        resultingFirstChild = newFiber;
+      } else {
+        previousNewFiber.sibling = newFiber;
+      }
+      previousNewFiber = newFiber;
+    }
+  }
+
+  if (shouldTrackSideEffects) {
+    // Any existing children that weren't consumed above were deleted. We need
+    // to add them to the deletion list.
+    // 其余不能复用的 old children 全部删除
+    existingChildren.forEach(child => deleteChild(returnFiber, child));
+  }
+
+  return resultingFirstChild;
+}
+```
+
+总体来看，react 对 childFiberArray 的调和方法大概是这样：
+
+- 分为改动、增加和删除三个场景，其中改动的优先级要大于删除和增加。
+- 先将 old children 和 new children 按照 index 逐个对比，只要遇到有 key 值不匹配的（updateSlot 函数），就进入改动场景，前面匹配的直接复用。
+- 改动场景中会将剩余的 old children 组成 `Map<key, fiber>` ，循环剩余的 new children，如果能在 map 中找到匹配 key 值的节点就复用，否则就创建（updateFromMap 函数）。
+- 如果没有进入改动场景，那就根据 old children 和 new children 谁有剩余进入删除或者增加的场景。
+- 如果 old children 有剩余，则进入删除场景，将剩余的 old children 全部删除。
+- 如果 new children 有剩余，则进入增加场景，剩余的 new children 全部新建并插入。
+- 最终返回挂载了处理过的 new fibers 链表（resultingFirstChild）。
+
+这里的改动、增加和删除三个场景和列表中的改动、增加和删除三个操作是不一样的，可以看到我们针对列表所做的大部分改动、增加和删除操作都是由 reconcileChildrenArray 的改动场景来完成的，只有在列表的末尾的增加和删除操作才会由 reconcileChildrenArray 的增加和删除场景去完成。这也说明可了 key 值对列表的重要性，在渲染阶段，利用 key 值来复用节点极大的降低了节点的创建成本、提高了页面的更新效率。
+
+> 现在我们知道了 key 值对于 fiber 的重要的优化意义。那么除了我们在列表中手动给节点添加的 key 值，其余的 key 值又是如何维护的呢？
+
+在前文 createFiber 中，我们知道 key 值是通过传入来创建 fiber 的。通过搜索得知，在各种形式的 fiber 创建方式中 key 都是传入的参数。我们在 createFiber 中打印出相应的 key 值，然后添加下面的测试代码：
+
+```js
+const List = () => {
+  const arr = new Array(20).fill(0);
+  return arr.map(a => <p key={Math.random()}>{a}</p>)
+}
+```
+
+打印效果如下：
+
+<img :src="$withBase('/assets/img/key_value_pic.png')" alt="fiber中 key 值的来源">
+
+这说明 key 值的重要的优化作用主要发生在增删改操作频繁的列表的渲染中，在其他的地方作用并不明显，因为并没有可复用节点的需求。
+
+-----
+
+下面我们来单独看看几个小函数：
+
+### updateSlot
+
+这个函数逐个比较 old children 和 new children 的 key值是否相等，相等则复用，不等则返回 null，创建跳出循环的条件。
+
+```js
+function updateSlot(
+  returnFiber: Fiber,
+  oldFiber: Fiber | null,
+  newChild: any,
+  expirationTime: ExpirationTime,
+): Fiber | null {
+  // Update the fiber if the keys match, otherwise return null.
+
+  const key = oldFiber !== null ? oldFiber.key : null;
+
+  if (typeof newChild === 'string' || typeof newChild === 'number') {
+    // Text nodes don't have keys. If the previous node is implicitly keyed
+    // we can continue to replace it without aborting even if it is not a text
+    // node.
+    if (key !== null) {
+      return null;
+    }
+    return updateTextNode(
+      returnFiber,
+      oldFiber,
+      '' + newChild,
+      expirationTime,
+    );
+  }
+
+  if (typeof newChild === 'object' && newChild !== null) {
+    switch (newChild.$$typeof) {
+      case REACT_ELEMENT_TYPE: {
+        if (newChild.key === key) {
+          if (newChild.type === REACT_FRAGMENT_TYPE) {
+            return updateFragment(
+              returnFiber,
+              oldFiber,
+              newChild.props.children,
+              expirationTime,
+              key,
+            );
+          }
+          return updateElement(
+            returnFiber,
+            oldFiber,
+            newChild,
+            expirationTime,
+          );
+        } else {
+          return null;
+        }
+      }
+      case REACT_PORTAL_TYPE: {
+        if (newChild.key === key) {
+          return updatePortal(
+            returnFiber,
+            oldFiber,
+            newChild,
+            expirationTime,
+          );
+        } else {
+          return null;
+        }
+      }
+    }
+
+    if (isArray(newChild) || getIteratorFn(newChild)) {
+      if (key !== null) {
+        return null;
+      }
+
+      return updateFragment(
+        returnFiber,
+        oldFiber,
+        newChild,
+        expirationTime,
+        null,
+      );
+    }
+
+    throwOnInvalidObjectType(returnFiber, newChild);
+  }
+
+  return null;
+}
+```
+
+注意，在 updateXXX 的函数中的逻辑都是对先判断fiber是否可更新，否则再去创建 fiber。 这里参照上文中对文本、普通 ReactElement、PortalElement 等单一节点的调和方法。
+
+### placeChild
+
+这个函数为 fiber 添加 'Placement' 标签，也就是放置节点。节点放置分为 move 和 insertion 两种操作。
+
+```js
+function placeChild(
+  newFiber: Fiber,
+  lastPlacedIndex: number,
+  newIndex: number,
+): number {
+  newFiber.index = newIndex;
+  if (!shouldTrackSideEffects) {
+    // Noop.
+    return lastPlacedIndex;
+  }
+  const current = newFiber.alternate;
+  if (current !== null) {
+    const oldIndex = current.index;
+    // 愿挨的 index 与 新的 index 不一致，移动节点
+    if (oldIndex < lastPlacedIndex) {
+      // This is a move.
+      newFiber.effectTag = Placement;
+      return lastPlacedIndex;
+    } else {
+      // index 一致，不必移动，保持原位
+      // This item can stay in place.
+      return oldIndex;
+    }
+  } else {
+    // 原来没有的直接插入到指定的 index 位置。
+    // This is an insertion.
+    newFiber.effectTag = Placement;
+    return lastPlacedIndex;
+  }
+}
+```
+
+从之前的分析中可以看出：
+
+- 对于 new children 中的每一个节点，都需要调用一下 `placeChild` 进行“放置”。事实上对于，无论是 'move' 还是 'insertion' 都是加入了 'Placement' 标签。这是因为为 neFibers 转化为 DomTree 时，只要是标记了 'Placement' 标签的节点，都会被按照新的 fiber.index 来调整位置。这时我们再来看 Fiber 定义中的 index，概念就更加清晰了。
+  
+### updateFromMap
+
+这个函数从 old children 中复用fiber，如果没有找到则创建新的 fiber。
+
+```js
+ function updateFromMap(
+  existingChildren: Map<string | number, Fiber>,
+  returnFiber: Fiber,
+  newIdx: number,
+  newChild: any,
+  expirationTime: ExpirationTime,
+): Fiber | null {
+  if (typeof newChild === 'string' || typeof newChild === 'number') {
+    // Text nodes don't have keys, so we neither have to check the old nor
+    // new node for the key. If both are text nodes, they match.
+    const matchedFiber = existingChildren.get(newIdx) || null;
+    return updateTextNode(
+      returnFiber,
+      matchedFiber,
+      '' + newChild,
+      expirationTime,
+    );
+  }
+
+  if (typeof newChild === 'object' && newChild !== null) {
+    switch (newChild.$$typeof) {
+      case REACT_ELEMENT_TYPE: {
+        const matchedFiber =
+          existingChildren.get(
+            newChild.key === null ? newIdx : newChild.key,
+          ) || null;
+        if (newChild.type === REACT_FRAGMENT_TYPE) {
+          return updateFragment(
+            returnFiber,
+            matchedFiber,
+            newChild.props.children,
+            expirationTime,
+            newChild.key,
+          );
+        }
+        return updateElement(
+          returnFiber,
+          matchedFiber,
+          newChild,
+          expirationTime,
+        );
+      }
+      case REACT_PORTAL_TYPE: {
+        const matchedFiber =
+          existingChildren.get(
+            newChild.key === null ? newIdx : newChild.key,
+          ) || null;
+        return updatePortal(
+          returnFiber,
+          matchedFiber,
+          newChild,
+          expirationTime,
+        );
+      }
+    }
+
+    if (isArray(newChild) || getIteratorFn(newChild)) {
+      const matchedFiber = existingChildren.get(newIdx) || null;
+      return updateFragment(
+        returnFiber,
+        matchedFiber,
+        newChild,
+        expirationTime,
+        null,
+      );
+    }
+
+    throwOnInvalidObjectType(returnFiber, newChild);
+  }
+
+  return null;
+}
+```
+
+- 从 existingChildren 中取出 matchedFiber 进行复用。
+- 根据不同的类型进行更新或者创建 fiber。
+
+上面我们理清楚了 reconcileChildFibers 的过程，具体在 mount 阶段和 render 阶段会有一些不同。
+
+- mount 阶段主要注重于创建 fiber。
+- render 阶段在创建 fiber 之前要考虑是否可以复用，减少创建成本。
+
+## 小结
+
+这篇文章详述了 ReactChildFiber 的创建过程，包括 SingleChild 和 ChildArray 的创建过程，理解 ReactElement 的输入是如何更新和转换为 Fiber 的，而整个 VNode Tree 转化为 FiberTree 正在这一过程的递归。
+  
