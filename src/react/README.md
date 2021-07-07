@@ -37,6 +37,7 @@ yarn start
 - [7kms/react-illustration-series](https://github.com/7kms/react-illustration-series)
 - [React 源码阅读系列文章](https://www.zhihu.com/column/c_1203007131219533824)
 - [React 源码解析](https://react.jokcy.me/)
+- [React技术揭秘](https://react.iamkasong.com/)
 
 ## TODO 计划
 
@@ -82,6 +83,8 @@ yarn start
 - []React 中的数据结构总结
 - []新版本中 lanes 在优先级上所做的更改。
 - []事件优先级
+- []位运算补课
+- []带着原理重读 React 官方文档
   
 ## 目录
 

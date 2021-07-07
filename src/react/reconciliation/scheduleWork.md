@@ -1,12 +1,16 @@
-# scheduleWork与任务调度
+# scheduleWork与调度入口
 
 [[TOC]]
 
-## scheduleWork()方法：为 Fiber 调度更新
-
 scheduleWork 是 react 调度的起点。`scheduleWork(fiber, expirationTime)`传入fiber 和 expirationTime，可见 fiber 更新的调度是根据 expirationTime 来处理的。
 
-在 `react-reconciler/src/ReactFiberWorkLoop.js` 中函数 `scheduleUpdateOnFiber()`实际上就是scheduleWork。
+在 `react-reconciler/src/ReactFiberWorkLoop.js` 中函数 `scheduleUpdateOnFiber`实际上就是scheduleWork。
+
+可以看到现在的 `ReactFiberWorkLoop` 还在 `react-reconciler` 包中，其实这里是调度的入口，是调和器与调度器交互的入口。在这里调和器将对 fiber 上的调度追溯到 HostFiberRoot（Fiber 的根节点），在 HostFiberRoot 根据 expirationTime 优先级层级区分为同步调度和异步调度，如果是同步调度（比如 FirstRender 阶段），将跳过调度器直接执行后续的更新流程，只有异步调度或者说当前已经处于 commit 或者 render 状态的同步调度才会交给调度器去调度和回调。
+
+下面我们就来看下调和器是如何做好与调度器的交接工作的。
+
+## scheduleWork：为 Fiber 调度更新
 
 scheduleUpdateOnFiber代码如下：
 
@@ -40,9 +44,10 @@ export function scheduleUpdateOnFiber(
 
     // TODO: computeExpirationForFiber also reads the priority. Pass the
     // priority as an argument to that function and this one.
-    // 获得任务的优先级
+    // 获得调度器当前回调的优先级
     const priorityLevel = getCurrentPriorityLevel();
 
+    // 同步调度，跳过优先级调度直接执行
     if (expirationTime === Sync) {
         if (
             // 如果是 unbatchedUpdates 且不在 rendering 和 commit 状态
@@ -50,6 +55,8 @@ export function scheduleUpdateOnFiber(
             // 第一个条件是 executionContext 的值为 LegacyUnbatchedContext，第二个条件是， executionContext 不能处在 RenderContext 或者是 CommitContext 的阶段。
             (executionContext & LegacyUnbatchedContext) !== NoContext &&
             // Check if we're not already rendering
+            // 这里表示不是处于 RenderContext 和 CommitContext，因为如果已经在 render 或者 commit 阶段，需要等待下一次
+            // 不在 render 阶段或 commit 阶段则直接执行更新
             (executionContext & (RenderContext | CommitContext)) === NoContext
         ) {
             // Register pending interactions on the root to avoid losing traced interaction data.
@@ -59,14 +66,14 @@ export function scheduleUpdateOnFiber(
             // This is a legacy edge case. The initial mount of a ReactDOM.render-ed
             // root inside of batchedUpdates should be synchronous, but layout updates
             // should be deferred until the end of the batch.
-            // 同步方式渲染 root
+            // 同步方式渲染 root，在 ReactDOM 中 FiberTree 的初始化会走到这里
             performSyncWorkOnRoot(root);
         } else {
 			      // 首次渲染，同步更新，确保root节点被调度
             ensureRootIsScheduled(root);
             // 调度追踪
             schedulePendingInteractions(root, expirationTime);
-            // 同步调度，直接执行调度
+            // 当前处于空闲状态，可以加工同步回调队列
             if (executionContext === NoContext) {
                 // Flush the synchronous work now, unless we're already working or inside
                 // a batch. This is intentionally inside scheduleUpdateOnFiber instead of
@@ -78,33 +85,39 @@ export function scheduleUpdateOnFiber(
             }
         }
     } else {
-        // 
+        // 异步调度
         ensureRootIsScheduled(root);
         schedulePendingInteractions(root, expirationTime);
     }
 
+   // 这里是对离散事件的管理，由映射表 rootsWithPendingDiscreteUpdates 管理
     if (
-        (executionContext & DiscreteEventContext) !== NoContext &&
-        // Only updates at user-blocking priority or greater are considered
-        // discrete, even inside a discrete event.
-        (priorityLevel === UserBlockingPriority ||
-            priorityLevel === ImmediatePriority)
-    ) {
-        // This is the result of a discrete event. Track the lowest priority
-        // discrete update per root so we can flush them early, if needed.
-        if (rootsWithPendingDiscreteUpdates === null) {
-            rootsWithPendingDiscreteUpdates = new Map([[root, expirationTime]]);
-        } else {
-            const lastDiscreteTime = rootsWithPendingDiscreteUpdates.get(root);
-            if (lastDiscreteTime === undefined || lastDiscreteTime > expirationTime) {
-                rootsWithPendingDiscreteUpdates.set(root, expirationTime);
-            }
-        }
+    (executionContext & DiscreteEventContext) !== NoContext &&
+    // Only updates at user-blocking priority or greater are considered
+    // discrete, even inside a discrete event.
+    (priorityLevel === UserBlockingPriority ||
+      priorityLevel === ImmediatePriority)
+      // 当前如果处于DiscreteEventContext，且调度器当前的回调优先级为 UserBlockingPriority 或者 ImmediatePriority
+      // 离散事件优先级（比如 click）较低
+  ) {
+    // This is the result of a discrete event. Track the lowest priority
+    // discrete update per root so we can flush them early, if needed.
+    if (rootsWithPendingDiscreteUpdates === null) {
+      // 如果离散表不存在就创建离散更新的映射表
+      rootsWithPendingDiscreteUpdates = new Map([[root, expirationTime]]);
+    } else {
+      // 当前 HostFiberRoot 上的离散更新
+      const lastDiscreteTime = rootsWithPendingDiscreteUpdates.get(root);
+      // 如果当前 HostFiberRoot 上还没有离散更新，或者这里的离散更新优先级更高，就将之覆盖掉离散表上当前 HostFiberRoot 上的更新。这里不会
+      if (lastDiscreteTime === undefined || lastDiscreteTime > expirationTime) {
+        rootsWithPendingDiscreteUpdates.set(root, expirationTime);
+      }
     }
+  }
 }
 ```
 
-### markUpdateTimeFromFiberToRoot 方法：更新 Fiber Tree 的 expirationTime
+### markUpdateTimeFromFiberToRoot：更新 Fiber Tree 的 expirationTime
 
 该函数用于获得 FiberRoot 对象，算出的本次更新的 expirationTime，更新 Fiber tree 上的 expirationTime。React 的每次更新其实是从整个 Fiber 树的根节点开始调度的。
 
@@ -201,7 +214,7 @@ function markUpdateTimeFromFiberToRoot(fiber, expirationTime) {
 - `node.return === null && node.tag === HostRoot` 是 root 节点的特征。
 
 
-### checkForNestedUpdates() 检查嵌套更新
+### checkForNestedUpdates: 检查嵌套更新
 
 如果`nestedUpdateCount > NESTED_UPDATE_LIMIT` 会被判定为嵌套更新然后报`Maximum update depth exceeded`的错误。其中 `NESTED_UPDATE_LIMIT` 为50，这是为了防止嵌套更新的死循环。比如在 render 中调用 setState 的情况。
 
@@ -230,7 +243,7 @@ if (remainingExpirationTime === Sync) {
 }
 ```
 
-### checkForInterruption 方法
+### checkForInterruption
 
 `checkForInterruption`方法会标记中断的 fiber，中断的 fiber 标记到`interruptedBy`上。
 
@@ -252,7 +265,7 @@ function checkForInterruption(
 
 如果 fiber 的优先级比当前执行的渲染任务的优先级更高，则需要将正在执行的渲染任务终端，转而去执行当前 fiber 的渲染更新任务。
 
-### recordScheduleUpdate 方法：记录调度更新的阶段
+### recordScheduleUpdate：记录调度更新的阶段
 
 `recordScheduleUpdate`方法记录调度更新，标记当前调度是处于 commit 阶段还是处于 render 阶段，分别记录在标记`hasScheduledUpdateInCurrentCommit`和`hasScheduledUpdateInCurrentPhase`。
 
@@ -282,7 +295,7 @@ export function recordScheduleUpdate(): void {
 现在重点看 `ensureRootIsScheduled` 和 `schedulePendingInteractions`方法。
 
 
-## ensureRootIsScheduled 方法：确保 Root 被调度
+## ensureRootIsScheduled：确保 Root 被调度
 
 ```ts
 // Use this function to schedule a task for a root. There's only one task per
@@ -295,6 +308,7 @@ export function recordScheduleUpdate(): void {
 function ensureRootIsScheduled(root: FiberRoot) {
   //lastExpiredTime 初始值为 noWork，只有当任务过期时，会被更改为过期时间（markRootExpiredAtTime方法）
   const lastExpiredTime = root.lastExpiredTime;
+  // 正常在拉起调度之前 lastExpiredTime 应该在 noWork，否则就说明应当先把 root 上遗留的更新任务给回调完，这时直接采用了同步的回调。
   if (lastExpiredTime !== NoWork) {
     // 特殊情况：过期的工作应该同步刷新。
     // 同步更新，过期的root立即更新
@@ -308,7 +322,7 @@ function ensureRootIsScheduled(root: FiberRoot) {
 
   const expirationTime = getNextRootExpirationTimeToWorkOn(root);
   const existingCallbackNode = root.callbackNode;
-  // 没有调度任务
+  // 没有调度任务，做一些重置的工作
   if (expirationTime === NoWork) {
     // There's nothing to work on.
     if (existingCallbackNode !== null) {
@@ -331,6 +345,7 @@ function ensureRootIsScheduled(root: FiberRoot) {
   // If there's an existing render task, confirm it has the correct priority and
   // expiration time. Otherwise, we'll cancel it and schedule a new one.
   // 如果存在一个渲染任务，确认它具有正确的优先级和过期时间。 否则，我们将取消它并安排一个新的。
+  // 当前的 ROOT 上已经被调度过，这时只需将它更新
   if (existingCallbackNode !== null) {
     const existingCallbackPriority = root.callbackPriority;
     const existingCallbackExpirationTime = root.callbackExpirationTime;
@@ -339,6 +354,7 @@ function ensureRootIsScheduled(root: FiberRoot) {
       existingCallbackExpirationTime === expirationTime &&
       // Callback must have greater or equal priority.
       existingCallbackPriority >= priorityLevel
+      // 如果已有的调度优先级更高，这时原来的优先级并不会延迟当前任务的执行，因此可以沿用这个调度，不必将它取消
     ) {
       // Existing callback is sufficient.
       return;
@@ -346,7 +362,7 @@ function ensureRootIsScheduled(root: FiberRoot) {
     // Need to schedule a new task.
     // TODO: Instead of scheduling a new task, we should be able to change the
     // priority of the existing one.
-    // 取消不合法的渲染任务
+    // 否则就取消原来的调度任务
     cancelCallback(existingCallbackNode);
   }
 
@@ -356,9 +372,8 @@ function ensureRootIsScheduled(root: FiberRoot) {
   let callbackNode;
   // 同步的渲染任务
   if (expirationTime === Sync) {
-    // 首次渲染调度
     // Sync React callbacks are scheduled on a special internal queue
-    // 由单独的调度队列调度
+    // 同步调度由单独的调度队列调度，注意这里并不是 FirstRender
     callbackNode = scheduleSyncCallback(performSyncWorkOnRoot.bind(null, root));
   } else if (disableSchedulerTimeoutBasedOnReactExpirationTime) {
     callbackNode = scheduleCallback(
@@ -382,7 +397,7 @@ function ensureRootIsScheduled(root: FiberRoot) {
 
 - 同步的调度调用了 `scheduleSyncCallback` 方法，异步的调度调用了 `scheduleCallback` 方法。
 
-## scheduleSyncCallback 方法：同步渲染的调度
+## scheduleSyncCallback：同步渲染的调度
 
 ```ts
 function scheduleSyncCallback(callback: SchedulerCallback) {
@@ -408,10 +423,10 @@ function scheduleSyncCallback(callback: SchedulerCallback) {
 ```
 
 - 同步任务由特殊的队列 `syncQueue` 调度，进入队列的首个任务将会初始化调度流程，其他任务只加入队列。
-- 同步任务调度由 `Scheduler_scheduleCallback` 初始化调度，调度将会在下一个 tick 执行，或者在 `flushSyncCallbackQueue` 被调用时提前执行。
+- 同步任务调度由 `Scheduler_scheduleCallback` 初始化调度，调度将会在下一个 tick 执行，或者在 `flushSyncCallbackQueue` 被调用时提前执行。此处正式进入调度器中。
 - `fakeCallbackNode` 返回一个虚假的 callback 节点，事实上是 {}。
 
-## scheduleCallback 方法：异步渲染的调度
+## scheduleCallback：异步渲染的调度
 
 `scheduleCallback` 内部是调用 `Scheduler_scheduleCallback` 方法实现的，这个方法接收调度的优先级和 callback，返回一个新的调度任务。
 
@@ -426,139 +441,7 @@ export function scheduleCallback(
 }
 ```
 
-## Scheduler_scheduleCallback：生成调度任务，设置回调
-
-`Scheduler_scheduleCallback` 来源于`unstable_scheduleCallback`方法，在独立的 scheduler/Scheduler.js 中。
-
-`unstable_scheduleCallback`方法代码如下：
-
-```ts
-function unstable_scheduleCallback(priorityLevel, callback, options) {
-    var currentTime = getCurrentTime();
-
-    // 计算startTime 和 timeout
-    var startTime;
-    var timeout;
-    if (typeof options === 'object' && options !== null) {
-        var delay = options.delay;
-        if (typeof delay === 'number' && delay > 0) {
-            startTime = currentTime + delay;
-        } else {
-            startTime = currentTime;
-        }
-        timeout =
-            typeof options.timeout === 'number' ?
-            options.timeout :
-            timeoutForPriorityLevel(priorityLevel);
-    } else {
-        timeout = timeoutForPriorityLevel(priorityLevel);
-        startTime = currentTime;
-    }
-    // 计算 expirationTime
-    var expirationTime = startTime + timeout;
-    // 创建新的 task
-    var newTask = {
-        id: taskIdCounter++,
-        callback,
-        priorityLevel,
-        startTime,
-        expirationTime,
-        sortIndex: -1,
-    };
-    if (enableProfiling) {
-        newTask.isQueued = false;
-    }
-
-    if (startTime > currentTime) {
-        // This is a delayed task.
-        // startTime 大于 currentTime 则 task 被 delay
-        // 延迟任务
-        newTask.sortIndex = startTime;
-        // 将新建的 task 添加至队列，延时任务加入到 timerQueue
-        push(timerQueue, newTask);
-        // 如果该新建 task 是最早 delay 的 task，即刚好是渲染队列队首的 task
-        if (peek(taskQueue) === null && newTask === peek(timerQueue)) {
-            // All tasks are delayed, and this is the task with the earliest delay.
-            if (isHostTimeoutScheduled) {
-                // Cancel an existing timeout.
-                cancelHostTimeout();
-            } else {
-                isHostTimeoutScheduled = true;
-            }
-            // Schedule a timeout.设置延时， 主线程延时回调
-            requestHostTimeout(handleTimeout, startTime - currentTime);
-        }
-    } else {
-        // 即时任务
-        newTask.sortIndex = expirationTime;
-        // 即时任务加入到 taskQueue
-        push(taskQueue, newTask);
-        if (enableProfiling) {
-            markTaskStart(newTask, currentTime);
-            newTask.isQueued = true;
-        }
-        // Schedule a host callback, if needed. If we're already performing work,
-        // wait until the next time we yield.
-        if (!isHostCallbackScheduled && !isPerformingWork) {
-            isHostCallbackScheduled = true;
-            //  请求主线程回调
-            requestHostCallback(flushWork);
-        }
-    }
-
-    return newTask;
-}
-```
-
-1. 如何计算 startTime 和 expirationTime？
- 
-- 如果 options中传了 delay，则 `startTime = currentTime + delay`，否则 `startTime = currentTime`。
-- 如果 options 中传了 timeout，则 timeout 为 `options.timeout`， 否则会跟根据优先级计算 timeout，即 `timeout = timeoutForPriorityLevel(priorityLevel)`。
-- `expirationTime = startTime + timeout`即超时时间为 `currentTime + delay + timeout`。
-
-2. 如何判断是即时任务还是延时任务？
-
-将 `startTime` 和 `currentTime` 进行比较，如果 `startTime > currentTime`，则认为是延时任务，否则就认为是即时任务。
-
-结合 `currentTime` 的计算方法可知，只有 options 中 delay 存在且大于 0 时，才会被认为是延时任务。
-
-3. callback 是如何处理的？
-
-callback 被挂载到到 newTask 上，newTask 最终由 `unstable_scheduleCallback` 返回。
-
-4. 即时任务和延时任务分别是如何处理的？
-
-- 即时任务
-
-即时任务会被加入到 `taskQueue` 队列中，由 `requestHostCallback` 调度，直接请求主线程回调。
-
-- 延时任务
-
-延时任务会被加入到 `timerQueue` 队列中，由 `requestHostTimeout` 调度，请求主线程延时回调。
-
-5. `taskQueue`  和  `timerQueue` 的区别？
-
-```ts
-// Tasks are stored on a min heap
-var taskQueue = [];
-var timerQueue = [];
-```
-
-- 这两个队列都是小顶堆，初始化为`[]`。
-- `taskQueue` 队列管理即时任务，`timerQueue` 队列管理延时任务，只有 `taskQueue` 中的任务才会被主线程立即回调。
-
-6. 关于小顶堆
-
-参考：
-- [# JS数据结构与算法之《堆》](https://zhuanlan.zhihu.com/p/144699737)
-- [# 前端进阶算法9：看完这篇，再也不怕堆排序、Top K、中位数问题面试了](https://github.com/sisterAn/JavaScript-Algorithms/issues/60)
-
-
-### requestHostTimeout 方法和 requestHostCallback 方法
-
-这两个方法去执行调度任务，详细请查看：[requestHostCallback 详解](./requestHostCallback.md)
-
-## performSyncWorkOnRoot 方法：同步任务调度更新
+- Scheduler_scheduleCallback：生成调度任务，设置回调。这里就进入到调度器中了，我们将在调度器中详解。到这里异步调度就移交给调度器了。
 
 ## schedulePendingInteractions 方法：追踪调度过程
 
@@ -624,6 +507,14 @@ function pushInteractions(root) {
 
 可见 interactions 是从 root.memoizedInteractions 获取的，pushInteractions 返回上一次的 interactions。
 
+上面经过我们的分析，无论是异步回调还是非 FirstRender 的同步回调，都由调度器交接了后续的工作，还剩余一种情况那就 FirstRender 我们还没有分析。我们已经知道 FirstRender 是不会交给调度器去调度的，而是直接由调和器执行了后续的更新回调。在这里我们就来看一下 FirstRender 是怎么处理的，当前我们不会分析的太具体，因为在后续的 `更新周期` 章节中将会对更新最详细的分析。
+
+## performSyncWorkOnRoot：同步任务调度更新
+
+
+
+## flushSyncCallbackQueue
+
 ## 小结
 
 1. `scheduleUpdateOnFiber` 的执行原理
@@ -638,12 +529,43 @@ function pushInteractions(root) {
 
 由此，我们可以看出：
 
-- 除了同步渲染且为初次渲染的情况下，才会跳过调度过程，直接进行渲染。否则，都会进行 callback 的调度渲染，调度渲染不会立即执行。
+- 除了同步渲染且为初次渲染的情况下，才会跳过调度过程，直接进行渲染。否则，都会进行 callback 的调度渲染，调度渲染不会立即执行，而是交给调度器完后后续的回调过程。
 - 同步渲染由 `scheduleSyncCallback` 调度，异步渲染由 `scheduleCallback` 调度，最终都是由 `unstable_scheduleCallback` 来管理调度任务，`unstable_scheduleCallback` 的功能是创建任务、将任务分为延时任务和即时任务和调度任务的执行。
 
 2. react 任务调度都做了些什么？
 
-- react 调度是从 FiberRoot 开始的，FiberRoot 就是没有父节点且标记为 HostRoot 的节点。
+- react 调度是从 FiberRoot 开始的，FiberRoot 就是没有父节点且标记为 HostRoot 的Fiber 根节点。
 - 调度开始，需要执行一些检查嵌套更新、检查中断更新、记录调度更新的操作，之后就会根据 expirationTime 来判断当前是什么更新模式，走上面的调度更新流程。
 - 调度更新不仅会影响 Fiber 节点自身，还会可能会影响到 Fiber 的父节点，因为 `markUpdateTimeFromFiberToRoot` 会更新 fiber 的 `expirationTime`，如果 fiber 不是 fiberRoot，还会更新其父节点的 `childExpirationTime`。
 - 在调度之后，`schedulePendingInteractions` 会对调度过程做一些统计、记录工作。
+
+3. 调和器和调度器的上层接口
+
+在 react-reconciler 包中，文件 SchedulerWithReactIntegration.js 充当了调和器和调度器的桥梁作用，在这个文件中引入了调度器的一些接口并基于调和器进行了封装。从文件名字我们就能看出这一点。
+
+可以看到这些方法实际上是来自于调度器。
+
+```js
+const {
+  unstable_runWithPriority: Scheduler_runWithPriority,
+  unstable_scheduleCallback: Scheduler_scheduleCallback,
+  unstable_cancelCallback: Scheduler_cancelCallback,
+  unstable_shouldYield: Scheduler_shouldYield,
+  unstable_requestPaint: Scheduler_requestPaint,
+  unstable_now: Scheduler_now,
+  unstable_getCurrentPriorityLevel: Scheduler_getCurrentPriorityLevel,
+  unstable_ImmediatePriority: Scheduler_ImmediatePriority,
+  unstable_UserBlockingPriority: Scheduler_UserBlockingPriority,
+  unstable_NormalPriority: Scheduler_NormalPriority,
+  unstable_LowPriority: Scheduler_LowPriority,
+  unstable_IdlePriority: Scheduler_IdlePriority,
+} = Scheduler;
+```
+
+这些方法是 SchedulerWithReactIntegration 基于调度器的封装。
+
+- `getCurrentPriorityLevel`: 从调度器获取当前调度的优先级。
+- `runWithPriority`：
+- `scheduleSyncCallback`: 通过调度器调度同步任务并维护同步更新列表 syncQueue。
+- `cancelCallback`: 从调度器中取消当前的回调。
+- `flushSyncCallbackQueue`: 批量执行 syncQueue 中的同步更新。

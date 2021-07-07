@@ -34,6 +34,7 @@ const sidebar = {
         `${reactPath}/reconciliation/fiber`,
         `${reactPath}/reconciliation/reactChildFiber`,
         `${reactPath}/reconciliation/expirationTime`,
+        `${reactPath}/reconciliation/scheduleWork`,
       ],
     },
     {
@@ -41,7 +42,7 @@ const sidebar = {
       collapsable: false,
       path: `${reactPath}/scheduler/`,
       sidebarDepth: 2,
-      children: [`${reactPath}/scheduler/scheduleWork`],
+      children: [`${reactPath}/scheduler/scheduleCallback`],
     },
     {
       title: "更新器（Updater）",
@@ -58,7 +59,7 @@ const sidebar = {
       children: [`${reactPath}/render/ReactDOM.render`],
     },
     {
-      title: "更新过程",
+      title: "更新周期",
       collapsable: false,
       path: `${reactPath}/update/`,
       sidebarDepth: 2,
@@ -76,7 +77,7 @@ const sidebar = {
       collapsable: false,
       path: `${reactPath}/summary/`,
       sidebarDepth: 1,
-      children: [],
+      children: [`${reactPath}/summary/bitOperation`],
     },
   ],
 };
