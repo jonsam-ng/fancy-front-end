@@ -1,6 +1,4 @@
-## scheduleCallback：
-
-生成调度任务，设置回调
+# scheduleCallback与调度任务
 
 `Scheduler_scheduleCallback` 来源于`unstable_scheduleCallback`方法，在独立的 scheduler/Scheduler.js 中。
 
@@ -32,11 +30,17 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
     var expirationTime = startTime + timeout;
     // 创建新的 task
     var newTask = {
+        // 任务 id 
         id: taskIdCounter++,
+        // 任务执行完之后的回调
         callback,
+        // 任务的优先级
         priorityLevel,
+        // 开始时间
         startTime,
+        // 超时时间：经过多长时间没执行的话必须执行
         expirationTime,
+        // 任务排序的索引
         sortIndex: -1,
     };
     if (enableProfiling) {
@@ -47,25 +51,31 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
         // This is a delayed task.
         // startTime 大于 currentTime 则 task 被 delay
         // 延迟任务
+        // 延迟的任务队列将以 startTime 进行排序
         newTask.sortIndex = startTime;
-        // 将新建的 task 添加至队列，延时任务加入到 timerQueue
+        // 将新建的 task 添加至队列，延时任务加入到 
+        // 延迟任务有队列 timerQueue 维护
         push(timerQueue, newTask);
         // 如果该新建 task 是最早 delay 的 task，即刚好是渲染队列队首的 task
         if (peek(taskQueue) === null && newTask === peek(timerQueue)) {
             // All tasks are delayed, and this is the task with the earliest delay.
             if (isHostTimeoutScheduled) {
                 // Cancel an existing timeout.
+                // 如果现在有延迟任务预约，就将这个延迟任务的预约取消
                 cancelHostTimeout();
             } else {
+              // 如果没有延迟任务的预约，就预约任务的回调
                 isHostTimeoutScheduled = true;
             }
-            // Schedule a timeout.设置延时， 主线程延时回调
+            // Schedule a timeout.
+            // 设置延时， 主线程延时回调，传入延迟时长和回调函数
             requestHostTimeout(handleTimeout, startTime - currentTime);
         }
     } else {
-        // 即时任务
+        // 即时任务，将以 expirationTime 进行排序
         newTask.sortIndex = expirationTime;
         // 即时任务加入到 taskQueue
+        // 即时任务由队列 taskQueue 维护
         push(taskQueue, newTask);
         if (enableProfiling) {
             markTaskStart(newTask, currentTime);
@@ -73,9 +83,11 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
         }
         // Schedule a host callback, if needed. If we're already performing work,
         // wait until the next time we yield.
+        //如果当前并没被其他即时任务预约，也没有正在回调某个任务
         if (!isHostCallbackScheduled && !isPerformingWork) {
+            // 预约当前任务
             isHostCallbackScheduled = true;
-            //  请求主线程回调
+            // 请求主线程回调
             requestHostCallback(flushWork);
         }
     }
@@ -83,6 +95,12 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
     return newTask;
 }
 ```
+
+这个函数的作用是：创建调度任务请求主线程回调。具体来看：
+
+- 将回调包装成任务，并且由相对的任务队列来管理。
+- 区分即时任务和延时任务，即时任务由 taskQueue 管理，延时任务由 timerQueue 管理。
+- 如果是即时任务，则请求主线程回调，如果是延时任务，则请求主线程延时回调。
 
 1. 如何计算 startTime 和 expirationTime？
  
@@ -127,6 +145,8 @@ var timerQueue = [];
 - [# JS数据结构与算法之《堆》](https://zhuanlan.zhihu.com/p/144699737)
 - [# 前端进阶算法9：看完这篇，再也不怕堆排序、Top K、中位数问题面试了](https://github.com/sisterAn/JavaScript-Algorithms/issues/60)
 
-### requestHostTimeout 方法和 requestHostCallback 方法
+7. 下面这三个函数由 SchedulerHostConfig 实现，前面我们已经知道 requestAnimationFrame 和 requestIdleCallback 这两个函数可以实现浏览器中任务执行的优先级，但是由于 API 兼容性（requestIdleCallback）的问题，react 内部进行了实现，用 requestAnimationFrame 和 setTimeout 模拟实现 requestIdleCallback。这部分我们将在 SchedulerHostConfig 中分析。
 
-这两个方法去执行调度任务，详细请查看：[requestHostCallback 详解](./requestHostCallback.md)
+- requestHostTimeout：请求主线程延时回调
+- cancelHostTimeout：取消主线程延迟回调
+- requestHostCallback：请求主线程回调

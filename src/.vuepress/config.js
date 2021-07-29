@@ -42,7 +42,10 @@ const sidebar = {
       collapsable: false,
       path: `${reactPath}/scheduler/`,
       sidebarDepth: 2,
-      children: [`${reactPath}/scheduler/scheduleCallback`],
+      children: [
+        `${reactPath}/scheduler/scheduleCallback`,
+        `${reactPath}/scheduler/schedulerHostConfig`,
+      ],
     },
     {
       title: "更新器（Updater）",
@@ -120,10 +123,6 @@ const nav = [
     ],
   },
   {
-    text: "🍈 Github",
-    link: "https://github.com/jonsam-ng/fe-source-reading",
-  },
-  {
     text: "🍓 博客",
     link: "https://www.jonsam.site",
   },
@@ -162,12 +161,16 @@ module.exports = {
    * ref：https://v1.vuepress.vuejs.org/theme/default-theme-config.html
    */
   themeConfig: {
-    repo: "",
-    editLinks: false,
-    docsDir: "",
-    editLinkText: "",
-    lastUpdated: false,
+    repo: "https://github.com/jonsam-ng/fe-source-reading",
+    repoLabel: "🍈 Github",
+    docsDir: "src",
+    docsBranch: "master",
+    editLinks: true,
+    editLinkText: "编辑页面",
+    lastUpdated: "上次更新",
+    darkMode: true,
     logo: "/logo.png",
+    smoothScroll: true,
     nav,
     sidebar: {
       collapsable: false,
@@ -186,12 +189,18 @@ module.exports = {
   /**
    * Apply plugins，ref：https://v1.vuepress.vuejs.org/zh/plugin/
    */
-  plugins: [
-    "@vuepress/plugin-back-to-top",
-    "@vuepress/plugin-medium-zoom",
-    "@vuepress/nprogress",
-    "@vuepress/pwa",
-    "vuepress-plugin-reading-time",
-    "vuepress-plugin-global-toc",
-  ],
+  plugins: {
+    "@vuepress/back-to-top": true,
+    "@vuepress/nprogress": true,
+    "@vuepress/pwa": true,
+    "vuepress-plugin-reading-time": true,
+    "vuepress-plugin-global-toc": true,
+    "@vuepress/last-updated": true,
+    "@vuepress/medium-zoom": {
+      selector: "img[data-zoomable]",
+    },
+  },
+  markdown: {
+    lineNumbers: true,
+  },
 };

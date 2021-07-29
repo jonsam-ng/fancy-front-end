@@ -1,10 +1,16 @@
 # React 核心包结构
 
+<TimeToRead />
+
+## 目录
+
+[[TOC]]
+
 ## React 核心包结构图
 
 下面是 react 是4个核心包的调度关系。
 
-<img :src="$withBase('/assets/img/core-packages.png')" alt="react内核3个包的主要职责和调用关系图">
+<img :src="$withBase('/assets/img/core-packages.png')" alt="react内核3个包的主要职责和调用关系图" data-zoomable>
 
 ## 核心包
 

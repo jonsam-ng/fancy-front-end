@@ -1,7 +1,12 @@
 # ReactDOM.render 方法
 
+<TimeToRead />
+
+## 目录
+
 [[TOC]]
 ## ReactDOM 是什么？
+
 在 react-dom 包中 ReactDOM.js 里定义了 ReactDOM。大致如下：
 
 ```ts

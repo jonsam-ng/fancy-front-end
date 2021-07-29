@@ -1,5 +1,9 @@
 # ReactChildren
 
+<TimeToRead />
+
+## 目录
+
 [[TOC]]
 
 React Children 有如下四个方法：

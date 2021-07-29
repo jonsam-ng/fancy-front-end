@@ -1,9 +1,15 @@
+# useState 和 useReducer
 
-# useState
+<TimeToRead />
+
+## 目录
 
 [[toc]]
 
+## dispatcher 分发器
+
 在 react 包中 react.js 文件导出了 hooks 相关的 API，包括：
+
 ```js
 useCallback, // 函数缓存
 
@@ -25,10 +31,11 @@ useRef, // 非响应式的数据暂存
 
 useState, // 响应式的组件状态管理
 ```
+
 我们先来看 useState 的原理。
 
-## dispatcher 分发器
 ### 定义
+
 所有的 hooks 从 react 包中 ReactHooks.js 导出定义，useState 定义如下：
 
 ```js
@@ -39,19 +46,28 @@ function useState < S > (initialState: (() => S) | S) {
 ```
 
 从这个定义里可以看出：
+
 1. S 是 state 的泛型，useState 传入一个初始的状态 initialState ，初始状态可以直接传入，也可以函数式传入。当初始状态需要较多的计算量时，可以使用函数返回值的方式传入。
-2. 所有的 hook 都需要经过 resolveDispatcher 返回的 dispatcher 来调度执行和更新。
+2. 所有的 hook 都需要经过 resolveDispatcher 返回的 dispatcher 来管理。
 
 ### dispatcher 是什么？如何生成的？
+
+<Badges :content="[{type: 'tip', text: '重要'}]" />
+
 先来看 `resolveDispatcher`这个函数，这个函数负责找到当前的分发器，ReactCurrentDispatcher 用来追踪当前的分发器：
+
 ```js
 const dispatcher = ReactCurrentDispatcher.current;
 ```
+
 如果找不到分发器，就会报我们使用 hook 最常见的错误：
+
 ```txt
 Invalid hook call. Hooks can only be called inside of the body of a function component.
 ```
+
 ReactCurrentDispatcher 被放在了 ReactSharedInternals 中，从 react-reconciler 包中 ReactFiberHooks.js 中可以看到 Dispatcher 类型：
+
 ```js
 type Dispatcher = {
     readContext < T > (
@@ -99,7 +115,7 @@ type Dispatcher = {
     C > ,
 };
 ```
-可见所有的 hook 都是由 dispatcher 来调度执行的。那么 dispatcher 只有一种吗？dispatcher 不止以一种，包括 ContextOnlyDispatcher、HooksDispatcherOnMount、HooksDispatcherOnUpdate 三种，还有一些 dev 环境的 dispatcher。
+可见所有的 hook 都是由 dispatcher 来调度执行的。那么 dispatcher 只有一种吗？dispatcher 不止以一种，包括 **ContextOnlyDispatcher**、**HooksDispatcherOnMount**、**HooksDispatcherOnUpdate** 三种，还有一些 dev 环境的 dispatcher。
 可以把 dispatcher 看做是一个 hook 的分发器，在不同的渲染阶段由不同的分发器来进行调度。那么不同的分发器有什么区别呢？我们来看一下这三种分发器：
 ```js
 export const ContextOnlyDispatcher: Dispatcher = {
@@ -136,7 +152,6 @@ const HooksDispatcherOnMount: Dispatcher = {
 
 const HooksDispatcherOnUpdate: Dispatcher = {
     readContext,
-
     useCallback: updateCallback,
     useContext: readContext,
     useEffect: updateEffect,
@@ -150,44 +165,51 @@ const HooksDispatcherOnUpdate: Dispatcher = {
     useResponder: createResponderListener,
 };
 ```
-可见分发器的区别在于 hook 的实例是不同的，ContextOnlyDispatcher 中直接报 `Invalid hook call` 的错误，HooksDispatcherOnMount 中是 Mount 阶段的 hook，而HooksDispatcherOnUpdate 中是 update 阶段的 hook。一个很明显的区别就是 HooksDispatcherOnMount 中的 hook 会做一些初始化、初始值的操作，而 HooksDispatcherOnUpdate 中的 hook 主要做一些更新的操作。
+可见分发器的区别在于 hook 的实例是不同的，ContextOnlyDispatcher 中直接报 `Invalid hook call` 的错误，`HooksDispatcherOnMount 中是 Mount 阶段的 hook，而HooksDispatcherOnUpdate 中是 update 阶段的 hook`。一个很明显的区别就是 HooksDispatcherOnMount 中的 hook 会做一些初始化、初始值的操作，而 HooksDispatcherOnUpdate 中的 hook 主要做一些更新的操作。
 
-### 当前的 dispatcher 是什么？dispatcher 是如何调度的？
+### dispatcher 是如何调度的？
 
-上面已经说明了 dispatcher 是什么，以及会怎么初始化，现在探讨一下当前的 dispatcher 是怎么设置的。HooksDispatcherOnMount、HooksDispatcherOnUpdate 这两种 dispatcher，在 renderWithHooks 函数中设置。ContextOnlyDispatcher 还会在 resetHooks 函数中设置。
+<Badges :content="[{type: 'tip', text: '重要'}]" />
+
+上面已经说明了 dispatcher 是什么，现在探讨一下当前的 dispatcher 是怎么设置的。HooksDispatcherOnMount、HooksDispatcherOnUpdate 这两种 dispatcher，在 renderWithHooks 函数中设置。ContextOnlyDispatcher 还会在 resetHooks 函数中设置。
+
+这个函数将会在每次 hook 被调用时执行。
 
 先看一下 renderWithHooks 函数，去除 dev 代码：
 
 ```js
 function renderWithHooks(
-    current: Fiber | null,
-    workInProgress: Fiber,
-    Component: any,
-    props: any,
+    current: Fiber | null, // 已经被渲染的 fiber
+    workInProgress: Fiber, // 等待被渲染的 fiber
+    Component: any, // hook 所依赖的组件，由于 hook 只存在于函数式组件，这里就是 FC
+    props: any, // hook hook 所依赖的组件的属性
     refOrContext: any,
-    nextRenderExpirationTime: ExpirationTime,
+    nextRenderExpirationTime: ExpirationTime, // 下次渲染的到期时间
 ): any {
     renderExpirationTime = nextRenderExpirationTime;
     // 这是当前正在渲染的 Fiber 
     currentlyRenderingFiber = workInProgress;
+    // 1. 更新 dispatcher
     // 如果当前的 fiber 已经存在，说明是 update 阶段
     nextCurrentHook = current !== null ? current.memoizedState : null;
     
-    // current?.memoizedState 为 true ,则 dispatcher 为 HooksDispatcherOnUpdate，否则为 HooksDispatcherOnMount
+    // current?.memoizedState 有值 ,则 dispatcher 为 HooksDispatcherOnUpdate，否则为 HooksDispatcherOnMount
     ReactCurrentDispatcher.current =
         nextCurrentHook === null ?
         HooksDispatcherOnMount :
         HooksDispatcherOnUpdate;
-    
-    // 执行 Component() 函数即执行 FC，返回需要渲染的 VDom, 可见 FC 的参数为：props 和 refOrContext
+    // 2. 执行 FC 获得节点
+    // 执行 Component() 函数即执行 FC，返回需要渲染的节点, 可见 FC 的参数为：props 和 refOrContext
     let children = Component(props, refOrContext);
 
+    // 3. 等待 dispatch action
     // dispatchAction 调用时，进入循环，dispatchAction 即为需要更新状态重新渲染时
     if (didScheduleRenderPhaseUpdate) {
+      // 这里进入了等待循环，只有 dispatch action 会打破这个循环，但是真正内部的 rerender 只会有一次。
         do {
             // 标志位置为了 false，则只会执行一次
             didScheduleRenderPhaseUpdate = false;
-            // 记录渲染的次数，如果numberOfReRenders > RE_RENDER_LIMIT,就会报 Too many re-renders 的错误。
+            // 记录渲染的次数，如果numberOfReRenders > RE_RENDER_LIMIT,就会报 Too many re-renders 的错误。防止进入渲染的死循环
             numberOfReRenders += 1;
             
             // Start over from the beginning of the list
@@ -198,11 +220,11 @@ function renderWithHooks(
             workInProgressHook = null;
             componentUpdateQueue = null;
 
-
+            // 这里是为了区分 dev 和 prd 环境中的 updateDispatcher
             ReactCurrentDispatcher.current = __DEV__ ?
                 HooksDispatcherOnUpdateInDEV :
                 HooksDispatcherOnUpdate;
-
+            // rerender: 重新生成组件节点
             children = Component(props, refOrContext);
         } while (didScheduleRenderPhaseUpdate);
 
@@ -213,9 +235,10 @@ function renderWithHooks(
     // We can assume the previous dispatcher is always this one, since we set it
     // at the beginning of the render phase and there's no re-entrancy.
     // 渲染完毕后的 dispatcher 为 ContextOnlyDispatcher
+    // 只有在 renderWithHooks 内部，即是 hooks 在渲染时才会取 mountDispatcher 或者 updateDispatcher。
     ReactCurrentDispatcher.current = ContextOnlyDispatcher;
 
-    // 更新 renderedWork 
+    // 更新 renderedWork，renderedWork 记录上一次 hook 渲染的结果
     const renderedWork: Fiber = (currentlyRenderingFiber: any);
 
     renderedWork.memoizedState = firstWorkInProgressHook;
@@ -255,12 +278,11 @@ function renderWithHooks(
 
 由这个函数可以看出：
 
-1. current 是当前已经渲染或的 Fiber，是现在的 Fiber，`current.memoizedState` 在类组件中保存的是 Fiber 当前的状态，而在函数是组件中无法通过 this 来引用 state，因此current.memoizedState 中保存的是 hook。
+1. current 是当前已经渲染或的 Fiber，是现在的 Fiber，`current.memoizedState` 在类组件中保存的是上一次 Fiber 当前的状态，而在函数组件中无法通过 this 来引用 state，因此current.memoizedState 中保存的是 hook。
 2. 渲染 hook 时会根据 `current.memoizedState` 的值来判断是属于挂载阶段还是更新阶段，如果是挂载阶段，使用的 dispatcher 就是 `HooksDispatcherOnMount`，如果是更新阶段，使用的 dispatcher 就是 `HooksDispatcherOnUpdate`。
-3. 在 `dispatchAction` 被调用时，会更新状态重新渲染。
+3. 在 `dispatchAction` 被调用时，才会更新状态重新渲染。
 4. 渲染完毕后，dispatcher 就是 `ContextOnlyDispatcher`。即 renderWithHooks 没有重新调用时，dispatcher 是不会生效的。
-5. `renderWithHooks` 将函数式组件进行返回更新后的组件（VDom）。
-
+5. `renderWithHooks` 将执行函数式组件返回更新后的节点。
 
 ## useState 的原理
 
@@ -268,7 +290,9 @@ function renderWithHooks(
 
 下面我们来看下 useState 是如何更新状态的：
 
-### mount phase 的 useState
+### mountState
+
+<Badges :content="[{type: 'tip', text: '重要'}]" />
 
 在挂载阶段，`HooksDispatcherOnMount` 引用的是 `mountState`。那就看看 `mountState` 函数：
 
@@ -276,14 +300,16 @@ function renderWithHooks(
 function mountState < S > (
     initialState: (() => S) | S,
 ): [S, Dispatch < BasicStateAction < S >> ] {
-    // hook 上记载了当前的 hook 的信息
+    // hook 上记载了当前的 hook 的信息，当前要执行的 hook
     const hook = mountWorkInProgressHook();
+    // 如果 initialState 是函数就执行他
     if (typeof initialState === 'function') {
         initialState = initialState();
     }
     // 初始状态被记载到memoizedState和baseState，其中 memoizedState 是上一次状态，baseState 是最初状态
     hook.memoizedState = hook.baseState = initialState;
-    // 生成更新对象，准备入队列
+    // 生成更新队列对象，挂载到 hook 上
+    // 作为 hook 更新链表的标识
     const queue = (hook.queue = {
         last: null,
         dispatch: null,
@@ -305,10 +331,13 @@ function mountState < S > (
 
 这里可以看出：
 
-1. useState 在 Mount 阶段将初始状态记录在 `hook.baseState` 上，并且生成了一个状态更新的对象，这个更新对象上挂载了 dispatch：当前的 setState 方法、lastRenderedState：上次渲染的 State 。
+1. useState 在 Mount 阶段将初始状态记录在 `hook.baseState` 上，并且生成了一个状态更新的对象，这个更新对象上挂载了 dispatch：当前的 setState 方法、lastRenderedState：上次渲染的 State，lastRenderedReducer：上次 reduce 所使用的 reducer 。
 2. 每个 setState 回调实质上就是一个 dispatchAction，这个 dispatchAction 依赖于 currentlyRenderingFiber：当前渲染的 Fiber、queue：状态更新对象。
+3. queue 是隶属于 hook 的，是 hook 的一个属性，下文中 dispatchAction 的调用也是通过 Map(queue, LinkedList) 的结构来管理 hook 所产生的更新的。
 
-### dispatchAction 调度更新
+### dispatchAction
+
+<Badges :content="[{type: 'tip', text: '重要'}, {type: 'tip', text: '生成管理更新'}]" />
 
 如果这时我们调用了 setState 去更新状态，会发生什么呢？那我们就来看看 `dispatchAction` 这个函数：
 
@@ -329,7 +358,7 @@ function dispatchAction < S, A > (
         if (
             fiber === currentlyRenderingFiber ||
             (alternate !== null && alternate === currentlyRenderingFiber)
-        ) { // 是否是当前需要渲染的 Fiber，进入渲染阶段
+        ) { // 是否是当前需要渲染的 Fiber，进入渲染阶段， currentlyRenderingFiber 表示当前需要渲染的 fiber
             // This is a render phase update. Stash it in a lazily-created map of
             // queue -> linked list of updates. After this render pass, we'll restart
             // and apply the stashed updates on top of the work-in-progress hook.
@@ -338,26 +367,27 @@ function dispatchAction < S, A > (
             didScheduleRenderPhaseUpdate = true;
             // 创建一个更新句柄
             const update: Update < S, A > = {
-                expirationTime: renderExpirationTime,
+                expirationTime: renderExpirationTime, // 更新的到期时间
                 suspenseConfig: null,
-                action,
+                action, // dispatchAction 的传值，这是 updateState 消费更新的原材料
                 eagerReducer: null,
                 eagerState: null,
                 next: null,
             };
             if (__DEV__) {
+                // 从调度器获取当前更新的优先级
                 update.priority = getCurrentPriorityLevel();
-                // renderPhaseUpdates 是存放 update queue 的一个队列，如果队列为空，则初始化队列
+                // renderPhaseUpdates 是存放 update queue 的一个队列（Map），如果队列为空，则初始化队列
                 if (renderPhaseUpdates === null) {
                     renderPhaseUpdates = new Map();
                 }
-                // 取出当前 queue 中的 update 队列的首项
+                // 取出当前 hook 中的 update 队列的首项
                 const firstRenderPhaseUpdate = renderPhaseUpdates.get(queue);
-                // 如果当前 queue 为空，则将创建的 update 放入队列
+                // 如果当前不存在以 queue 对象为键的 update，则将创建的 update 放入队列
                 if (firstRenderPhaseUpdate === undefined) {
                     renderPhaseUpdates.set(queue, update);
                 } else {
-                    // 将 queue 队列中首项追加到队尾
+                    // 如果当前 hook 已经有 update 了，将 update 移动到当前 LinkedLink 的尾部
                     // Append the update to the end of the list.
                     let lastRenderPhaseUpdate = firstRenderPhaseUpdate;
                     while (lastRenderPhaseUpdate.next !== null) {
@@ -366,20 +396,22 @@ function dispatchAction < S, A > (
                     lastRenderPhaseUpdate.next = update;
                 }
             } else {
+                // prod 环境 
                 const currentTime = requestCurrentTime();
                 const suspenseConfig = requestCurrentSuspenseConfig();
+                // 计算当前组件 fiber 的到期时间
                 const expirationTime = computeExpirationForFiber(
                     currentTime,
                     fiber,
                     suspenseConfig,
                 );
-
+                // 创建 update 对象
                 const update: Update < S, A > = {
-                    expirationTime,
-                    suspenseConfig,
-                    action,
-                    eagerReducer: null,
-                    eagerState: null,
+                    expirationTime, //  fiber 的过期时间
+                    suspenseConfig, 
+                    action, // dispatchAction 的传值
+                    eagerReducer: null, // 提前计算所使用的 reducer，即 queue.lastRenderedReducer
+                    eagerState: null, // 提前计算的 state 缓存
                     next: null,
                 };
 
@@ -388,27 +420,36 @@ function dispatchAction < S, A > (
                 }
                 // update 的数据结构，环状单向链表
                 // Append the update to the end of the list.
+                // 将更新挂载到链表尾部
                 const last = queue.last;
                 if (last === null) {
-                    // 如果这是一个空队列，即 update 就是首次更新，那就将 update 构成环形单向链表。
+                    // 如果这是一个空队列，即 update 就是当前 hook 的首次更新，那就将 update 构成环形单向链表。
+                    // 这是因为我们判断这个链表是环形链表。
+                    // 注意：这里并不是说 mount 阶段，因为 mount 阶段只是初始化了 queue。
                     // This is the first update. Create a circular list.
                     update.next = update;
                 } else {
+                    // 非首次渲染
                     // 如果队列非空，队尾的 next 即为 first
                     const first = last.next;
+                    // 下面代码一般都会执行，因为已经初始化为环形链表了
                     if (first !== null) {
                         // 如果队尾是有指向的，也就是已经形成了环形单向链表，那就直接把 update 放到队尾。
                         // 即 update 的 next 指向 first。
                         // Still circular.
                         update.next = first;
                     }
-                    // 如果没有成环，把 update 置于队尾
+                    // 如果已经成环，就仍然是环形；如果没有成环，则 update 在队尾
                     last.next = update;
                 }
-                // 更新队尾指针
+                // 更新队尾指针，队尾指针总是指向最新的 update
                 queue.last = update;
-
-                if ( // mount 阶段
+                
+                // 一般来说，来到这里的 fiber 的 expirationTime 不会是即时的，如果出现了这种情况，比如即时任务，就可以提前计算新的 state。
+                // 可以看到，在下面的代码中如果 state 没变是直接 return 的，也就是跳过了调度器的 scheduleWork 的调度，减少了更新损耗。
+                // 如果新的 state 与 原来的 state 不等，则仍然需要调度器进行调度，但是计算的结果已经缓存在 update 中了。
+                // 这里的更新属于同步的更新，是通过 const eagerState = lastRenderedReducer(currentState, action) 来计算的。
+                if ( 
                     fiber.expirationTime === NoWork &&
                     (alternate === null || alternate.expirationTime === NoWork)
                 ) {
@@ -450,24 +491,49 @@ function dispatchAction < S, A > (
         }
 ```
 
+::: tip 核心理解
+
+- hook 所产生的 update 是在 dispatchAction 中产生的， 也就是说整个函数一定运行在 render 阶段。
+- hook 上发生的更新在 dev 和 prod 不一样，在 dev 上是通过更新队列 **renderPhaseUpdates** Map(queue, 单向linkedList) 来维护的，而在 prod 环境是通过 **renderPhaseUpdates** Map(queue, 环形linkedList) 来维护的。
+- 每个 hook 维护了一个 queue 用来记录改 hook 所引发的更新。queue 的 last 指向最新的 update。queue 作为 renderPhaseUpdates 的键，挂在了 update 所组成的环形链表。
+- update 被初始化为环形链表，之后所产生的的 update 都被插入到环形链表的尾部。
+:::
+
 下面重点看一下 dispatchAction 中的数据结构。
 
--  dispatchAction 数据结构是 map<queue, linked list>，其中 update 构成单向环形链表。
--  scheduleWork(fiber, expirationTime) 会调度 fiber 的更新。
--  react update 数据结构图如下图。
+- dispatchAction 数据结构是 map<queue, linked list>，其中 update 构成单向环形链表。
+- scheduleWork(fiber, expirationTime) 会调度 fiber 的更新。
+- react update 数据结构图如下图。
 
-<img :src="$withBase('/assets/img/react%20update%20数据结构.png')" alt="react update 数据结构.png">
+<img :src="$withBase('/assets/img/react%20update%20数据结构.png')" alt="react update 数据结构.png" data-zoomable />
+
+::: warning 注意
+这张图以首次 update 和原来形成环状两个部分为主，原来没有形成环状基本不会出现。
+:::
 
 update 对象是如何处理的？
 
 update 对象是根据 queue.last 指针来确定的，也就是说可以通过 last 指针找到最新的 update 。那么 dispatchAction 这个函数的主要作用就是：
 
-- 将 hook 运行所产生的的 update 添加到链表中，便于 scheduleWork 以及之后的程序去调度使用。
-- 同时对于挂载阶段的首次 update 也做了特殊的处理，在进入渲染之前就开始计算下一个 state，即 eagerState。
+- 将 hook 运行所产生的的 update 添加到链表中，便于 scheduleWork 以及之后的程序(调度器)去调度使用。
+- 同时对于挂载阶段的首次 update 也做了特殊的处理，在进入渲染之前如果是同步任务就提前计算下一个 state，即 eagerState。减少调度损耗。
 - scheduleWork 正是任务调度中的起始部分。
 
+下面来看几个问题？
 
-### render phase 的 useState
+1. **为什么使用单向环形链表和管理更新？**
+
+- 单向环形链表相比于单向链表具有一个很大的优势就是可以从任意一个节点来遍历整个链表，对链表的头部和尾部没有那么重视。所有在单向环形链表中搜索的效率可以很大的提高。
+- react 的更新依赖于优先级，每一个 update 优先级不同，要保证高优先级的 update 优先执行，搜索效率尤为重要。
+- 环状链表可以方便定位到任何一次高优先级的更新位置去执行，而暂时摒弃低优先级的更新，提高更新的效率。
+
+参考文档：
+
+- [数据结构系列-2-循环链表](https://zhuanlan.zhihu.com/p/116707149)
+
+### updateState
+
+<Badges :content="[{type: 'tip', text: '重要'}, {type: 'tip', text: '消费更新'}]" />
 
 在 render 阶段，HooksDispatcherOnUpdate 这个 dispatcher 所调用的是 `updateState` 这个函数。
 
@@ -482,10 +548,10 @@ function updateState<S>(
 ```
 
 这里可以看到：
+
 - updateState 是依赖于 updateReducer 来处理状态变化的，后面我们会看到 useReducer 在 update 阶段所使用的正是 updateReducer。
-- updateReducer 接受初始状态 initialState，返回一个 state 和 一个 dispatch 函数，这符合我们对 useReducer 的认知。可见 useReducer 是 useState 的副产物，或者说 useReducer 是 useState 状态管理的基础。
+- updateReducer 接受初始状态 reducer 和 initialState，返回一个 state 和一个 dispatch 函数，这符合我们对 useReducer 的认知。可见 useReducer 是 useState 状态管理的基础。
 - useState 使用的 reducer 是 basicStateReducer。
-  
 
 #### 什么是 reducer 和 basicStateReducer？
 
@@ -501,12 +567,14 @@ function basicStateReducer<S>(state: S, action: BasicStateAction<S>): S {
 }
 ```
 
-`basicStateReducer` 就是说：如果 action 是一个状态转换器（即时函数），将就将原状态交由转换器进行转换，返回新的状态，否则就像 action 视为一个返回新状态。看到这里，和 useState 中 dispatch 的用法就契合上了，useState 使用了 basicStateReducer，可见 dispatch 的实质就是一个 basicStateReducer。
+`basicStateReducer` 就是说：如果 action 是一个状态转换器（即是函数），就将原状态交由转换器进行转换，返回新的状态，否则就像 action 视为一个返回新状态。看到这里，和 useState 中 dispatch 的用法就契合上了，useState 使用了 basicStateReducer。
 
 
 下面来看一下 updateReducer 是如何处理的，解决了这个问题，我们可以同时弄清楚 useReducer 的原理了。
 
 ## updateReducer 更新状态
+
+<Badges :content="[{type: 'tip', text: '重要'}]" />
 
 请看 updateReducer 函数的源码：
 
@@ -535,30 +603,32 @@ function updateReducer<S, I, A>(
     // 这里的 dispatch 是在上一次 setState 是挂载到 queue 上的，如果是 mount 阶段，
     // 也会返回一个 dispatch，可参照 mount 阶段
     const dispatch: Dispatch<A> = (queue.dispatch: any);
-    // renderPhaseUpdates 中记录了更新队列，结构是  Map<UpdateQueue,Update>
+    // renderPhaseUpdates 中记录了更新队列，结构是  Map<UpdateQueue,Update Linked List>
     // 更新队列非空
     if (renderPhaseUpdates !== null) {
       // Render phase updates are stored in a map of queue -> linked list
       // 获取当前 hook 的第一个更新
       const firstRenderPhaseUpdate = renderPhaseUpdates.get(queue);
       // 如果没有需要更新的，则不必走下面的 reduce 过程
+      // firstRenderPhaseUpdate 正在更新链表的头指针
       if (firstRenderPhaseUpdate !== undefined) {
         // 经过下面 reduce 的过程，当前 queue 下所有的更新应该都被处理，
-        // 所以这里可以提前将 queue 删掉，因为 queue 下面的 update 链表已经保存在 firstRenderPhaseUpdate
-        // firstRenderPhaseUpdate 正在更新链表的头指针
-        // 这里实际上是断开了 queue 和 firstRenderPhaseUpdate 的指向关系
+        // 所以这里可以提前将 queue 删掉，因为 queue 下面的 update 链表已经保存在 firstRenderPhaseUpdate指针
+        // 这里实际上是并没有断开 queue 和 firstRenderPhaseUpdate 的指向关系，只是在 firstRenderPhaseUpdate map 中将 queue 移除，
+        // 由于 queue 还有引用，不不会被垃圾回收。
         renderPhaseUpdates.delete(queue);
         // state reduce 过程以 memoizedState 为初始状态
         let newState = hook.memoizedState;
         let update = firstRenderPhaseUpdate;
         // 这个循环说明在useState的状态更新过程中，会将 update 组成一个一个的 queue，每个 queue 中的
-        // 所有的 update 都是一起更新的，也就是一个更新链。河阳可以避免产生过多的无意义的 re-render，
+        // 所有的 update 都是一起更新的（batch update），也就是一个更新链。这样可以避免产生过多的无意义的 re-render，
         // 提高更新的效率。
-        // 这里建表的更新是从链首到链首依次更新的。
+        // 这里链表的执行是从链尾到链首依次reduce的。
         do {
           // Process this render phase update. We don't have to check the
           // priority because it will always be the same as the current
           // render's.
+          // 这里不用关注优先级，因为这属于同一次渲染。
           // 每个 update 上都有一个 action ,具体可见上文 update 的结构
           // setState 的 action 是一个 BasicStateAction
           const action = update.action;
@@ -571,7 +641,7 @@ function updateReducer<S, I, A>(
         // Mark that the fiber performed work, but only if the new state is
         // different from the current state.
         // 如果最新状态 newState 和原状态 memoizedState 不一致，则 didReceiveUpdate 为 true
-        // 表示在 fiber 上执行了更新
+        // 表示在 fiber 应该执行更新
         if (!is(newState, hook.memoizedState)) {
           markWorkInProgressReceivedUpdate();
         }
@@ -585,10 +655,9 @@ function updateReducer<S, I, A>(
         if (hook.baseUpdate === queue.last) {
           hook.baseState = newState;
         }
-        // lastRenderedState 记录上一次的 state，此次 render 后，updates 链表将被回收，但是 map 
-        // 上的 queue 却没有丢，并且将上次渲染状态更新为 newState
+        // lastRenderedState 记录上一次的 state，此次 render 后，将上次渲染状态更新为 newState
         queue.lastRenderedState = newState;
-        // 经过 render 之后返回新状态 newState 和 dispatch 函数。dispatch 实际上是从 queue 上取的。
+        // 经过 render 之后返回新状态 newState 和 dispatch 函数。dispatch 实际上是从 queue 上取的，实际上是 dispatchAction 函数。
         return [newState, dispatch];
       }
     }
@@ -611,8 +680,8 @@ function updateReducer<S, I, A>(
       // For the first update, the queue is a circular linked list where
       // `queue.last.next = queue.first`. Once the first update commits, and
       // the `baseUpdate` is no longer empty, we can unravel the list.
-      // 这是首次 update，update.next ==== update, 如果是首次渲染，baseUpdate 应该为空
-      // 而此处 baseUpdate 不为空，说明经过了首次渲染，所以将链表解开
+      // 这是首次 update，queue.last.next = queue.first, 如果是首次渲染，只有一个 update，如果这个 update 被 commit，
+      // 就可以将链表解开
       last.next = null;
     }
     // 正常情况下直接取 baseUpdate.next
@@ -632,7 +701,8 @@ function updateReducer<S, I, A>(
     // 循环 reduce 状态，获取最新状态
     do {
       const updateExpirationTime = update.expirationTime;
-      // 该 update 太新，未超过 renderExpirationTime，优先级较低
+      // 该 update 太新，未超过 renderExpirationTime，优先级较低, expirationTime 是负数
+      // renderExpirationTime = 0
       if (updateExpirationTime < renderExpirationTime) {
         // Priority is insufficient. Skip this update. If this is the first
         // skipped update, the previous update/state is the new base
@@ -645,7 +715,7 @@ function updateReducer<S, I, A>(
           newBaseState = newState;
         }
         // remainingExpirationTime 表示当前队列中不用立即渲染的低优先级的 update 中距离 renderExpirationTime
-        // 最近的超时时间，这个时间越大，在下次渲染中该队列的优先级越大
+        // 最近的超时时间，这个时间越大，在下次渲染中该队列的优先级越大，每次终端都会更新这个值
         // Update the remaining priority in the queue.
         if (updateExpirationTime > remainingExpirationTime) {
           remainingExpirationTime = updateExpirationTime;
@@ -667,6 +737,7 @@ function updateReducer<S, I, A>(
         );
 
         // Process this update.
+        // eagerReducer 和 当前的 reducer 表示进行了提前计算
         if (update.eagerReducer === reducer) {
           // If this update was processed eagerly, and its reducer matches the
           // current reducer, we can use the eagerly computed state.
@@ -717,8 +788,8 @@ function updateReducer<S, I, A>(
 
 | 参数                | 描述                                   |
 | ------------------- | -------------------------------------- |
-| lastRenderedReducer | 用于 reducer 状态的 reducer            |
-| dispatch            | 暴露给用户的修改状态的action           |
+| lastRenderedReducer | 用于 reduce 状态的 reducer             |
+| dispatch            | 暴露给用户的修改状态的 dispatchAction  |
 | last                | 指向 update queue 中首个 update 的指针 |
 | lastRenderedState   | 上一次渲染的状态                       |
 
@@ -729,13 +800,20 @@ function dispatch(state || () => state): void // 本质上就是一个 action
 function reducer(state, action): state // 本质上是一个状态转换器
 ```
 
-- numberOfReRenders 会随着 renderWithHooks 的调用增加，记录的是 renderWithHooks 的调用次数。renderWithHooks 主要在 react-reconciler 包中 ReactFiberBeginWork.js 中使用，这个函数是渲染 FC 组件的，返回组件的 VDOM。 numberOfReRenders 只有增加、重置两种操作。在 finishHooks 和 resetHooks 函数中会将 numberOfReRenders 重置为 0；这说明在 hook finish 之前，会 render 多次。
+- numberOfReRenders 会随着 renderWithHooks 的调用增加，记录的是 renderWithHooks 的调用次数，也就是 re-render 的次数。renderWithHooks 主要在 react-reconciler 包中 ReactFiberBeginWork.js 中使用，这个函数是渲染 FC 组件的，返回组件的渲染节点。 numberOfReRenders 只有增加、重置两种操作。在 finishHooks 和 resetHooks 函数中会将 numberOfReRenders 重置为 0；这说明在 hook finish 之前，renderWithHooks 可能会调用多次。
 
-- renderExpirationTime 是一个常量 `NoWork = 0`，因此 updateExpirationTime 应该是负数，当这个过期时间达到 0 时，才具有渲染的与优先级，否则会被跳过，并更新 remainingExpirationTime（remainingExpirationTime 是逐渐变大的）。
+- renderExpirationTime 是一个常量 `NoWork = 0`，因此 updateExpirationTime 应该是负数，当这个到期时间达到 0 时，才具有渲染的与优先级，否则会被跳过，并更新 remainingExpirationTime（remainingExpirationTime 是逐渐变大的）。
 
 - updateReducer 结构图：
 
-<img :src="$withBase('/assets/img/updateReducer%20结构图.png')" alt="updateReducer 结构图">
+<img :src="$withBase('/assets/img/updateReducer%20结构图￼.png')" alt="updateReducer 结构图" data-zoomable />
+
+::: tip 核心理解
+
+- 在一个 hook 执行期间，首次更新渲染（不是 mount 时的渲染）和多次更新渲染所使用的 updateState 的逻辑是不一样的。首次更新渲染需要过滤掉优先级较低的 update ，多次更新渲染则直接对所有 update 进行 reduce（reduce 就是计算 newState 的过程）。
+- resetHooks 方法 会在 performSyncWorkOnRoot/performConcurrentWorkOnRoot → handleError 中调用。这说明在react 执行期间，如果不出意外的话就一直属于 hook 运行的生命周期。
+- TOFIX 为什么会针对首次更新渲染有这样的不同？
+:::
 
 ## 一些问题
 
@@ -743,11 +821,11 @@ function reducer(state, action): state // 本质上是一个状态转换器
 
 ### useState 状态更新为什么会引起 UI 更新？
 
-在这个部分里，只是对 newState 做了计算，最终 newState 被挂载在了 hook.memoizedState 上（也就是说更新了 hook.memoizedState 的值），在需要 reRender 时将 didReceiveUpdate 标记为了 true。真正的 UI 的更新，还得跟 render 部分和 上文中的 dispatchAction 有关。didReceiveUpdate 主要在 react-reconciler 包中 ReactFiberBeginWork.js 中被使用。useState 只是对 didReceiveUpdate 做了标记，UI 更新会在 setState 之后 dispatchAction 中 scheduleWork 的调用后进行调度更新。
+在这个部分里，只是对 newState 做了计算，最终 newState 被挂载在了 hook.memoizedState 上（也就是说更新了 hook.memoizedState 的值），在需要 reRender 时将 didReceiveUpdate 标记为了 true。真正的 UI 的更新，还得跟 render 部分和调度器有关。didReceiveUpdate 主要在 react-reconciler 包中 ReactFiberBeginWork.js 中被使用。useState 只是对 didReceiveUpdate 做了标记，UI 更新会在 setState 之后 dispatchAction 中 scheduleWork 的调用后由调度器进行调度更新。
 
 ### renderPhaseUpdates 管理更新
 
-下面仅展示 renderPhaseUpdates 的内容。
+下面仅展示 renderPhaseUpdates 相关的的内容。
 renderPhaseUpdates 数据结构如下：
 
 ```js
@@ -812,13 +890,28 @@ export function useMergedState<T>(initialState: T) {
 至此 useState 的原理就明晰了。下面简单总结下：
 
 - 各种 hook api 都是由 dispatcher 管理的，不同的渲染阶段会使用不同的 dispatcher，当然 dev 环境也会有 dev 环境的 dispatcher。
-
 - mount 阶段调用 mountState 初始化 state 并生成 queue 在 dispatchAction 中加入 renderPhaseUpdates，并且直接由 dispatchAction 调度渲染。
-
 - render 阶段调用 updateState 利用 reducer 更新 state 和 dispatch，这里并没有直接 调度渲染。
-
 - 在 setState 被使用时就调用了 dispatchAction 调度渲染。dispatchAction 创建更新对象，更新 update 环形链表的结构，并且调用了 scheduleWork 去调度更新 Fiber。
 
-## 参考链接
+### 为什么 batch update 时，链表上会有多个 update?
+
+- 链表上的 update 是由 dispatchAction 生成的，dispatchAction 生产 update 是同步执行的，也就是说，在很短的情况下 queue 上会几句大量的 update。
+- update 在被 dispatchAction 管理时并不会立即执行，因为 update 是需要调度器接受进行优先级调度的，可以看做一个异步的过程。
+- 在某个 fiber 上所产生的任务被调度器释放触发更新循环时，可能在 queue 上已经积累了大量的 update 了。注意调度器的调度并不是以 update 为单位的，而是以 fiber 为单位的。
+
+## 本篇小结
+
+通过这边文章从 dispatcher 分发器、mountState、dispatchAction、updateState 等代码的分析，总结如下：
+
+1. 重要函数的作用
+
+- dispatcher：管理当前环境下应该调用的 hook。
+- mountState：初始化 hook 和 queue。mount 阶段不生产和消费 update。
+- dispatchAction：生产 update；管理和维护 update，将 update 的调度移交给调度器。
+- updateState（updateReducer）：消费 update?
+
+## 参考资料
 
 - [官方文档](https://reactjs.org/docs/hooks-reference.html#usestate)
+- [React Hooks 核心实现](https://juejin.cn/post/6976903535191392270)

@@ -1,5 +1,9 @@
 # useEffect
 
+<TimeToRead />
+
+## 目录
+
 [[toc]]
 
 > useEffect 在 hooks 中通常被充当生命周期使用，相比于类组件的 lifecycle Api，useEffect 的使用更加简洁精巧。其主要作用是对响应式的依赖项产生副作用。

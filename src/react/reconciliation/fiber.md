@@ -1,5 +1,9 @@
 # fiber 与 Reconciliation
 
+<TimeToRead />
+
+## 目录
+
 [[TOC]]
 
 调和的代码主要在 react-reconciler 包中。

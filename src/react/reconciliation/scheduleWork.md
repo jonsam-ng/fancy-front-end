@@ -1,5 +1,9 @@
 # scheduleWork与调度入口
 
+<TimeToRead />
+
+## 目录
+
 [[TOC]]
 
 scheduleWork 是 react 调度的起点。`scheduleWork(fiber, expirationTime)`传入fiber 和 expirationTime，可见 fiber 更新的调度是根据 expirationTime 来处理的。
@@ -511,9 +515,11 @@ function pushInteractions(root) {
 
 ## performSyncWorkOnRoot：同步任务调度更新
 
-
+<!-- TODO -->
 
 ## flushSyncCallbackQueue
+
+<!-- TODO -->
 
 ## 小结
 

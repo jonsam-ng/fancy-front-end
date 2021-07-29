@@ -5,3 +5,33 @@
 那么为什么需要调度器呢？我们知道，调和器虽然在宏观上掌控着更新的创建和回调，但是如何去调度这个更新任务的执行还是得靠调度器的工作。因此，可以说调度器的作用就是帮助调和器和包装和管理更新，在调度器里，我们称之为任务，调度器维护者基于优先级机制的更新任务列表，并且按照一定的顺序交给调和器去执行，这些被调度器回调的更新被调和器进一步执行并提交，最终完成 FiberTree 的创建交给渲染器去渲染。
 
 从一方面看，调度器完成者任务调度的工作，从另一方面看，任务的调度本质上也是对资源的调度。如果缺少有效的资源调度，就无法把本身有效的资源充分的发挥其作用来高效的完成页面的渲染和更新任务。从本质上来看，页面的渲染就是一个事件循环，各种轻重缓急的事件任务都需要耗费资源去完成，这样看看，调度器对于提升资源的利用效率就显得至关重要了。
+
+调度器部分的源码在 scheduler 包中 Scheduler.js 文件中，我们先来看看 scheduler 中会有哪些内容：
+
+```js
+export {
+  // 调度优先级
+  ImmediatePriority as unstable_ImmediatePriority,
+  UserBlockingPriority as unstable_UserBlockingPriority,
+  NormalPriority as unstable_NormalPriority,
+  IdlePriority as unstable_IdlePriority,
+  LowPriority as unstable_LowPriority,
+  // 以某种优先级执行回调
+  unstable_runWithPriority,
+  unstable_next,
+  // 调度一个回调
+  unstable_scheduleCallback,
+  // 取消一个回调
+  unstable_cancelCallback,
+  unstable_wrapCallback,
+  // 获得当前正在被调度的回调的优先级
+  unstable_getCurrentPriorityLevel,
+  unstable_shouldYield,
+  unstable_requestPaint,
+  unstable_continueExecution,
+  unstable_pauseExecution,
+  unstable_getFirstCallbackNode,
+  getCurrentTime as unstable_now,
+  forceFrameRate as unstable_forceFrameRate,
+};
+```
