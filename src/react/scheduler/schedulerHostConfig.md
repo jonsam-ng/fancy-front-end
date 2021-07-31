@@ -1,8 +1,16 @@
 # SchedulerHostConfig
 
+<TimeToRead />
+
+## 目录
+
+[[TOC]]
+
 ## 非 DOM 环境
 
-在非 DOM 环境中，不存在 rAF Api，因此采用了原生的 setTimeout 来模拟。
+<Badges :content="[{type: 'tip', text: '了解'}]" />
+
+在非 DOM 环境中，不存在 rAF Api，因此采用了原生的 setTimeout 来模拟。这里主要用于 node 环境。
 
 ```js
 if (
@@ -76,6 +84,8 @@ if (
 在 DOM 环境中，将会以 rAF 和 setTimeout 模拟。
 
 ## requestHostCallback：请求主线程回调
+
+<Badges :content="[{type: 'tip', text: '重要'}]" />
 
 ```js
 // 请求主线程即时回调
@@ -190,7 +200,6 @@ const performWorkUntilDeadline = () => {
 
 ### onAnimationFrame
 
-
 ```js
 const onAnimationFrame = rAFTime => {
   // 没有回调任务
@@ -212,7 +221,7 @@ const onAnimationFrame = rAFTime => {
   // after that.
   // 在帧首提前调度下一个动画回调。如果在帧尾调度队列非空，将会在此次回调时继续执行其他的回调。
   // 如果调度队列为空，则立即退出。在帧首调节这个回调以保证他会在尽可能早的帧里被触发。
-  // 如果等到帧尾在提交回调，可能会导致浏览器有跳帧和没有在真伪触发回调的风险。
+  // 如果等到帧尾在提交回调，可能会导致浏览器有跳帧和没有在帧尾触发回调的风险。
   isRAFLoopRunning = true;
   requestAnimationFrame(nextRAFTime => {\=
     // 在下一帧中清除定时器并再次执行onAnimationFrame
@@ -261,7 +270,7 @@ const onAnimationFrame = rAFTime => {
           // Defensive coding. We don't support higher frame rates than 120hz.
           // If the calculated frame length gets lower than 8, it is probably
           // a bug.
-          // 最多只能支持 120赫兹的帧率，
+          // 最多只能支持 120 赫兹的帧率，
           frameLength = 8.33;
         }
       }
@@ -279,8 +288,30 @@ const onAnimationFrame = rAFTime => {
 };
 ```
 
+## cancelHostCallback
+
+```js
+cancelHostCallback = function() {
+  scheduledHostCallback = null;
+};
+```
+
 ## requestHostTimeout：请求主线程延时回调
 
-
+```js
+// 请求主线程延时回调。这里直接用了 setTimeout。
+requestHostTimeout = function(callback, ms) {
+  taskTimeoutID = setTimeout(() => {
+    callback(getCurrentTime());
+  }, ms);
+};
+```
 
 ## cancelHostTimeout：取消主线程延迟回调
+
+```js
+cancelHostTimeout = function() {
+  clearTimeout(taskTimeoutID);
+  taskTimeoutID = -1;
+};
+```

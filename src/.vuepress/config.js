@@ -45,6 +45,7 @@ const sidebar = {
       children: [
         `${reactPath}/scheduler/scheduleCallback`,
         `${reactPath}/scheduler/schedulerHostConfig`,
+        `${reactPath}/scheduler/scheduler`,
       ],
     },
     {

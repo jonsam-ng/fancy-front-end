@@ -12,23 +12,14 @@
 
 ```js
 useCallback, // 函数缓存
-
 useContext, // 从 context 中获得 provider 传递的数据，经常和 createContext 和 context.Provider 一起使用。
-
 useEffect, // 执行副作用，包括网络请求，数据交互，UI 更新等。
-
 useImperativeHandle, // 将组件内部的变量或者方法暴露给外部，外部可使用 ref 进行调用。
-
 useDebugValue, // debug 时的优化项
-
-useLayoutEffect, // 在 UI 更新之后执行副作用
-
+useLayoutEffect, // 在 DOM 更新之后执行副作用
 useMemo, // 缓存变量
-
 useReducer, // 用于状态管理（数据共享），可以调用 reducer，常与 useContext 一起使用
-
 useRef, // 非响应式的数据暂存
-
 useState, // 响应式的组件状态管理
 ```
 
@@ -202,10 +193,8 @@ function renderWithHooks(
     // 执行 Component() 函数即执行 FC，返回需要渲染的节点, 可见 FC 的参数为：props 和 refOrContext
     let children = Component(props, refOrContext);
 
-    // 3. 等待 dispatch action
-    // dispatchAction 调用时，进入循环，dispatchAction 即为需要更新状态重新渲染时
+
     if (didScheduleRenderPhaseUpdate) {
-      // 这里进入了等待循环，只有 dispatch action 会打破这个循环，但是真正内部的 rerender 只会有一次。
         do {
             // 标志位置为了 false，则只会执行一次
             didScheduleRenderPhaseUpdate = false;
@@ -224,7 +213,7 @@ function renderWithHooks(
             ReactCurrentDispatcher.current = __DEV__ ?
                 HooksDispatcherOnUpdateInDEV :
                 HooksDispatcherOnUpdate;
-            // rerender: 重新生成组件节点
+            // re-render: 重新生成组件节点
             children = Component(props, refOrContext);
         } while (didScheduleRenderPhaseUpdate);
 
@@ -276,6 +265,15 @@ function renderWithHooks(
 }
 ```
 
+::: tip 核心理解
+
+- renderWithHooks 只会在 mount 阶段执行，每个 FC 组件会执行一次，类组件不执行。
+- renderWithHooks 生成的 children 是 ReactElement。
+
+<img :src="$withBase('/assets/img/demo_fc_renderWithHooks.png')" alt="demo_fc_renderWithHooks" data-zoomable />
+
+:::
+
 由这个函数可以看出：
 
 1. current 是当前已经渲染或的 Fiber，是现在的 Fiber，`current.memoizedState` 在类组件中保存的是上一次 Fiber 当前的状态，而在函数组件中无法通过 this 来引用 state，因此current.memoizedState 中保存的是 hook。
@@ -283,6 +281,40 @@ function renderWithHooks(
 3. 在 `dispatchAction` 被调用时，才会更新状态重新渲染。
 4. 渲染完毕后，dispatcher 就是 `ContextOnlyDispatcher`。即 renderWithHooks 没有重新调用时，dispatcher 是不会生效的。
 5. `renderWithHooks` 将执行函数式组件返回更新后的节点。
+6. 有一段代码很奇怪：
+
+```js
+if (didScheduleRenderPhaseUpdate) {
+    do {
+        // 标志位置为了 false，则只会执行一次
+        didScheduleRenderPhaseUpdate = false;
+        // 记录渲染的次数，如果numberOfReRenders > RE_RENDER_LIMIT(25),就会报 Too many re-renders 的错误。防止进入渲染的死循环
+        numberOfReRenders += 1;
+
+        // 这里是为了区分 dev 和 prd 环境中的 updateDispatcher
+        ReactCurrentDispatcher.current = __DEV__ ?
+            HooksDispatcherOnUpdateInDEV :
+            HooksDispatcherOnUpdate;
+        // re-render: 重新生成组件节点
+        children = Component(props, refOrContext);
+    } while (didScheduleRenderPhaseUpdate);
+
+    renderPhaseUpdates = null;
+    numberOfReRenders = 0;
+}
+```
+
+上面不是讲了吗，renderWithHooks 只会在 mount 是调用啊，但是 didScheduleRenderPhaseUpdate 这个值是在 useReducer 中设置为 true 的啊，也就是说只有在 render 阶段才会进入这段代码，这不是矛盾吗？
+也许我们可以猜测，这段代码在 render 时也可能会运行，那既然这里有防止死循环的措施，那么我们就认为的创造一个死循环。我们在 FC 的顶层 setState 来人为造成死循环：
+
+<img :src="$withBase('/assets/img/demo_render_too_many_times.png')" alt="demo_render_too_many_times" data-zoomable />
+
+现在我们知道了，这里就是在控制 render-in-render 的情况，一般这种情况并不会发生，如果发生了就会有 RE_RENDER_LIMIT 的限制，所以 didScheduleRenderPhaseUpdate 变量就是在描述是否是在 render 的过程中又发生了 render（之所以会这样，是因为 useReducer 正是在 render 时才被触发）。
+
+现在我们来分析下这个报错的过程，renderWithHooks 简写做 F：
+
+mount → 外层 FC 触发 F → log children → 进入内层包含死循环的 FC 触发 F → log children → 执行内层 FC → 执行到 toggleLight(引起死循环) → 触发 dispatchAction → didScheduleRenderPhaseUpdate 标记为 true → 执行完内层 FC 后，进入 render-in-render 代码段 → 代码段内部执行 FC → 执行到 toggleLight(引起死循环) → 触发 dispatchAction ... 进入 render-in-render 代码段 → 以此循环 24 次，分别打印 24 次 numberOfReRenders → (在 dev 环境下会 resetHooks 一次，将 didScheduleRenderPhaseUpdate 清零) → 上述内层组件过程在执行一次 → 这个内层组件渲染次数超过 RE_RENDER_LIMIT 限制，报错 → 打印其他 FC children。
+
 
 ## useState 的原理
 
@@ -569,10 +601,9 @@ function basicStateReducer<S>(state: S, action: BasicStateAction<S>): S {
 
 `basicStateReducer` 就是说：如果 action 是一个状态转换器（即是函数），就将原状态交由转换器进行转换，返回新的状态，否则就像 action 视为一个返回新状态。看到这里，和 useState 中 dispatch 的用法就契合上了，useState 使用了 basicStateReducer。
 
-
 下面来看一下 updateReducer 是如何处理的，解决了这个问题，我们可以同时弄清楚 useReducer 的原理了。
 
-## updateReducer 更新状态
+## updateReducer
 
 <Badges :content="[{type: 'tip', text: '重要'}]" />
 
@@ -813,13 +844,24 @@ function reducer(state, action): state // 本质上是一个状态转换器
 - 在一个 hook 执行期间，首次更新渲染（不是 mount 时的渲染）和多次更新渲染所使用的 updateState 的逻辑是不一样的。首次更新渲染需要过滤掉优先级较低的 update ，多次更新渲染则直接对所有 update 进行 reduce（reduce 就是计算 newState 的过程）。
 - resetHooks 方法 会在 performSyncWorkOnRoot/performConcurrentWorkOnRoot → handleError 中调用。这说明在react 执行期间，如果不出意外的话就一直属于 hook 运行的生命周期。
 - TOFIX 为什么会针对首次更新渲染有这样的不同？
+- Batched Updates
+
+这里的核心逻辑就是对 hook 中的 queue 下的更新进行合并更新。合并更新是在一次发生的，也就是说 react 对用户的 dispatchAction 并非一次一次的更新，而是在 dispatchAction 和真正的 reduce updates 这中间做了一个合流，在 reduce update 之后产生新的状态到真正的渲染，也就是 renderWithHooks 这中间又间隔着调度器的调度，相当于又一次的合流。这样的两次合流，就是的从 dispatchAction 到 render 之间的损耗大大减小，渲染的效率有了很大的提高。就像千万溪流汇聚成大海，这样的渲染就节省了很多的中间状态的开支。
+
+```js
+do {
+  newState = reducer(newState, action);
+  update = update.next;
+} while (update !== null);
+```
+
 :::
 
 ## 一些问题
 
 看到这里还有一些细节问题：
 
-### useState 状态更新为什么会引起 UI 更新？
+### useState 是实时引起 UI 更新吗？
 
 在这个部分里，只是对 newState 做了计算，最终 newState 被挂载在了 hook.memoizedState 上（也就是说更新了 hook.memoizedState 的值），在需要 reRender 时将 didReceiveUpdate 标记为了 true。真正的 UI 的更新，还得跟 render 部分和调度器有关。didReceiveUpdate 主要在 react-reconciler 包中 ReactFiberBeginWork.js 中被使用。useState 只是对 didReceiveUpdate 做了标记，UI 更新会在 setState 之后 dispatchAction 中 scheduleWork 的调用后由调度器进行调度更新。
 
@@ -835,17 +877,6 @@ let renderPhaseUpdates: Map<
 > | null = null;
 ```
 
-updateReducer 中：
-
-```js
-if (renderPhaseUpdates !== null) {
-  const firstRenderPhaseUpdate = renderPhaseUpdates.get(queue);
-  if (firstRenderPhaseUpdate !== undefined) {
-    renderPhaseUpdates.delete(queue);
-  }
-}
-```
-
 dispatchAction 中：
 
 ```js
@@ -858,12 +889,34 @@ if (firstRenderPhaseUpdate === undefined) {
 }
 ```
 
-- 可见其本质是一个 Map，在 dispatchAction 中初始化，并且将 setState 所产生的更新装进 map，每个 useState 对应 map 中的一个 queue，queue 中是一个环状链表，last 指向首个 update。
+updateReducer 中：
+
+```js
+if (renderPhaseUpdates !== null) {
+  const firstRenderPhaseUpdate = renderPhaseUpdates.get(queue);
+  if (firstRenderPhaseUpdate !== undefined) {
+    renderPhaseUpdates.delete(queue);
+    ...
+  }
+}
+```
+
+- renderPhaseUpdates本质是一个 Map，在 dispatchAction 中初始化，并且将 setState 所产生的更新装进 map，每个 useState 对应 map 中的一个 queue，queue 中是一个环状链表，last 指向首个 update。
 - 在 resetHooks 中被重置为 null，在 updateReducer 中 queue 被消费。
 
 ### 为什么 setState 是状态的替换，而不是状态的补充？
 
-我们知道 setState 实质上创建饿更新并将 queue 上的 update 链表的建构更新了，并且通知了 scheduleWork 调度更新。因此在更新中 updateReducer 生成了 newState，这里的 newState 重新渲染了页面。updateReducer 中更新 newState 靠的就是 reducer，在 useState 中使用的 reducer 就是 `basicStateReducer`。basicStateReducer 是将 setState 中的状态直接替换了原来的状态。因此，setState 实际上是状态的替换。如果想要状态的补充，可以在 setState 中将原来的状态进行 merge，这不修改 setState 的本质特点，但是相比之下会更加灵活。
+我们知道 setState 实质上创建 queue 上的更新并将 queue 上的 update 链表的结构更新了，并且通知了 scheduleWork 调度 fiber 上的更新。因此在更新中 updateReducer 生成了 newState，这里的 newState 作为新的页面状态重新渲染了页面。updateReducer 中更新 newState 靠的就是 reducer，在 useState 中使用的 reducer 就是 `basicStateReducer`。basicStateReducer 是将 setState 中的状态直接替换了原来的状态。因此，setState 实际上是状态的替换。如果想要状态的补充，可以在 setState 中将原来的状态进行 merge 之后再替换，这不修改 setState 的本质特点，但是相比之下会更加灵活。
+
+basicStateReducer：
+
+```js
+function basicStateReducer<S>(state: S, action: BasicStateAction<S>): S {
+  return typeof action === 'function' ? action(state) : action;
+}
+```
+
+useMergedState：
 
 ```ts
 export function useMergedState<T>(initialState: T) {
@@ -885,20 +938,11 @@ export function useMergedState<T>(initialState: T) {
 }
 ```
 
--------
-
-至此 useState 的原理就明晰了。下面简单总结下：
-
-- 各种 hook api 都是由 dispatcher 管理的，不同的渲染阶段会使用不同的 dispatcher，当然 dev 环境也会有 dev 环境的 dispatcher。
-- mount 阶段调用 mountState 初始化 state 并生成 queue 在 dispatchAction 中加入 renderPhaseUpdates，并且直接由 dispatchAction 调度渲染。
-- render 阶段调用 updateState 利用 reducer 更新 state 和 dispatch，这里并没有直接 调度渲染。
-- 在 setState 被使用时就调用了 dispatchAction 调度渲染。dispatchAction 创建更新对象，更新 update 环形链表的结构，并且调用了 scheduleWork 去调度更新 Fiber。
-
 ### 为什么 batch update 时，链表上会有多个 update?
 
 - 链表上的 update 是由 dispatchAction 生成的，dispatchAction 生产 update 是同步执行的，也就是说，在很短的情况下 queue 上会几句大量的 update。
-- update 在被 dispatchAction 管理时并不会立即执行，因为 update 是需要调度器接受进行优先级调度的，可以看做一个异步的过程。
-- 在某个 fiber 上所产生的任务被调度器释放触发更新循环时，可能在 queue 上已经积累了大量的 update 了。注意调度器的调度并不是以 update 为单位的，而是以 fiber 为单位的。
+- update 在被 dispatchAction 管理时并不会立即被 reduce，因为 update 依赖于调度器在 fiber 上进行优先级调度的，可以看做一个异步的过程。
+- 在某个 fiber 上所产生的任务被调度器释放触发更新循环时，可能在 queue 上已经积累了大量的 update 了。注意调度器的调度并不是以 update 为单位的，而是以 fiber 为单位的。这是因为 update 是在太多了，会引起调度的效率低下。
 
 ## 本篇小结
 
@@ -909,7 +953,16 @@ export function useMergedState<T>(initialState: T) {
 - dispatcher：管理当前环境下应该调用的 hook。
 - mountState：初始化 hook 和 queue。mount 阶段不生产和消费 update。
 - dispatchAction：生产 update；管理和维护 update，将 update 的调度移交给调度器。
-- updateState（updateReducer）：消费 update?
+- updateState（updateReducer）：消费 update，更新 fiber 上的 state。
+
+2. 原理梗概：
+
+- 各种 hook api 都是由 dispatcher 管理的，不同的渲染阶段会使用不同的 dispatcher，当然 dev 环境也会有 dev 环境的 dispatcher。
+- mount 阶段调用 mountState 初始化 state 并生成 queue， 在 dispatchAction 中加入 renderPhaseUpdates，并且直接由 dispatchAction 管理。
+- render 阶段调用 updateState 利用 reducer 更新 state 和 dispatch，这里并没有直接引起渲染。
+- 在 setState 被使用时就调用了 dispatchAction 调度渲染。dispatchAction 创建更新对象，更新 update 环形链表的结构，并且调用了 scheduleWork 去调度更新 Fiber。
+
+<img :src="$withBase('/drawio/setState_map.drawio.svg')" alt="react update 数据结构.png" data-zoomable />
 
 ## 参考资料
 
