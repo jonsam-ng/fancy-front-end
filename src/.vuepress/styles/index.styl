@@ -47,6 +47,8 @@ html.dark-mode
     background-color: var(--bg);
     color: var(--color);
 
+
+
 html, body, header.navbar, aside.sidebar, header.navbar div.links, html .dropdown-wrapper .nav-dropdown{
   background-color: var(--bg);
   color: var(--color);
@@ -58,3 +60,354 @@ html
 html
   .page-edit .edit-link, .page-edit .last-updated
     font-size: 12px;
+  aside.sidebar .sidebar-links li
+    a.sidebar-link
+      font-size: 12px;
+  .sidebar-heading
+    font-size: 12px;
+  
+::-webkit-scrollbar{
+  width:4px;
+  height:4px;
+  background:transparent;
+}
+::-webkit-scrollbar-track:hover {
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb,
+::-webkit-scrollbar-thumb:active {
+  background-color: #44AAAB !important;
+  border-radius: 2px;
+}
+
+html.light-mode main.page
+  --title-color: #44AAAB;
+  --text-color: #444444;
+  --light-text-color: #666666;
+  --link-color: #2aa899;
+  --code-color: #745fb5;
+
+  --shadow-color: #eee;
+  --border-quote: #333;
+  --border: #e7e7e7;
+  --shadow: 3px 3px 10px var(--shadow-color);
+
+  --base-font: "Helvetica Neue", "Noto Sans", -apple-system, Ubuntu,
+    "Microsoft YaHei", Helvetica, "Nimbus Sans L", Arial, "Liberation Sans",
+    "Noto Sans CJK SC", "PingFang SC", "Hiragino Sans GB", "Source Han Sans SC",
+    "Source Han Sans CN", "Wenquanyi Micro Hei", "WenQuanYi Zen Hei", "ST Heiti",
+    SimHei, "WenQuanYi Zen Hei Sharp", "Source Sans Pro", sans-serif;
+  --title-font: "EB Garamond", Georgia, "Noto Serif", "Noto Serif CJK SC",
+    "Nimbus Roman No9 L", "Songti SC", "Source Han Serif SC",
+    "Source Han Serif CN", STSong, "AR PL New Sung", "AR PL SungtiL GB", NSimSun,
+    SimSun, "TW\-Sung", "WenQuanYi Bitmap Song", "AR PL UMing CN",
+    "AR PL UMing HK", "AR PL UMing TW", "AR PL UMing TW MBE", PMingLiU, MingLiU,
+    "Ubuntu", "Source Sans Pro", serif;
+  --monospace: "JetBrains Mono", "Fira Code", "Cascadia Code", "Sarasa Term SC",
+    Monaco, "Deja Vu Sans Mono", Consolas, "Lucida Console", "Andale Mono",
+    "Roboto Mono", Courier, Monospace !important;
+  --header-weight: bold;
+
+  font-size: 12px;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-rendering: optimizelegibility;
+  -webkit-font-smoothing: initial;
+  color: var(--text-color);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6rem;
+  letter-spacing: 0;
+  overflow-x: hidden;
+
+  /* Link 链接 */
+  a {
+    text-decoration: none;
+  }
+  .md-content {
+    color: var(--light-text-color);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    position: relative;
+    font-weight: var(--header-weight);
+    cursor: text;
+    color: var(--title-color);
+    font-family: var(--title-font);
+  }
+
+  h1 {
+    font-size: 1.3em;
+    margin-bottom: 2rem;
+    font-weight: 800;
+  }
+
+  h2 {
+    font-size: 1.25em;
+    border-bottom: 1px solid var(--title-color);
+    font-weight: 600;
+  }
+  h3 {
+    font-size: 1.2em;
+    font-weight: 600;
+  }
+  h4 {
+    font-size: 1.15em;
+  }
+  h5 {
+    font-size: 1.1em;
+  }
+  h6 {
+    font-size: 1em;
+  }
+
+  p,
+  blockquote,
+  ul,
+  ol,
+  dl,
+  table {
+    margin: 0.8em 0;
+  }
+
+  /* horizontal rule */
+  hr {
+    margin: 1.5em auto;
+    border-top: 1px solid var(--border);
+  }
+
+  /* 列表 */
+  li > ol,
+  li > ul {
+    margin: 0 0;
+  }
+
+  li p.first {
+    display: inline-block;
+  }
+
+  ul,
+  ol {
+    padding-left: 2rem;
+  }
+
+  ul:first-child,
+  ol:first-child {
+    margin-top: 0;
+  }
+
+  ul:last-child,
+  ol:last-child {
+    margin-bottom: 0;
+  }
+
+  ul li {
+    padding-left: 0.1rem;
+  }
+
+  /* 引用 */
+  blockquote {
+    border-left: 0.3rem solid var(--border-quote)!important;
+    padding-left: 1em;
+    color: var(--light-text-color);
+    font-family: var(--base-font);
+  }
+
+  /* 表格 */
+  table {
+    margin-bottom: 1.25rem;
+  }
+  table th,
+  table td {
+    padding: 8px;
+    line-height: 1.25rem;
+    vertical-align: middle;
+    border: 1px solid #ddd;
+  }
+  table th {
+    font-weight: bold;
+  }
+  table thead th {
+    vertical-align: middle;
+  }
+  table tr:nth-child(2n),
+  thead {
+    background-color: #fcfcfc;
+  }
+
+
+html.dark-mode main.page
+  --bg-color: #141d28;
+  --side-bar-bg-color: #090b10;
+  --control-text-color: #a9aaab;
+  --primary-color: #efb752;
+  --primary-btn-border-color: #f0b752;
+  --active-file-text-color: inherit;
+  --active-file-border-color: #f0b752;
+  --active-file-bg-color: #131c29;
+  --primary-btn-text-color: #f0b752;
+  --window-border: 1px solid #16161a;
+  --item-hover-bg-color: #1a283d;
+  --item-hover-text-color: #f0b752;
+  --meta-content-color: #f0b752;
+  --search-select-text-color: #f0b752;
+  /* --control-text-color: var(--text-color); */
+  --control-text-color: #6db7d1;
+  /* --control-text-hover-color: var(--text-color); */
+  --control-text-hover-color: #f0b752;
+  --heading-char-color: #f0b752;
+  
+  font-size: 12px;
+  color: #a9aaab;
+  font-family: Helvetica, Arial, sans-serif;
+  height: 100%;
+  line-height: 1.6;
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+      cursor: text;
+      font-weight: bold;
+      line-height: 1.4;
+      position: relative;
+  }
+
+  h1 {
+      border-bottom: 1px solid #f79f2a;
+      font-size: 1.3em;
+      line-height: 1.2;
+      padding-bottom: 0.3em;
+  }
+
+  h2 {
+      font-size: 1.25em;
+      line-height: 1.225;
+      padding-bottom: 0.3em;
+  }
+
+  h3 {
+      font-size: 1.2em;
+      line-height: 1.43;
+  }
+
+  h4 {
+      font-size: 1.15em;
+  }
+
+  h5 {
+      font-size: 1.1em;
+  }
+
+  h6 {
+      font-size: 1em;
+  }
+
+  p,
+  blockquote,
+  ul,
+  ol,
+  dl,
+  table {
+      margin: 0.8em 0;
+  }
+
+  hr {
+      background-color: #f0b752;
+      border: 0 none;
+      box-sizing: content-box;
+      height: 2px;
+      margin: 16px 0;
+      overflow: hidden;
+      padding: 0;
+  }
+
+  li p.first {
+      display: inline-block;
+  }
+
+  ul,
+  ol {
+      padding-left: 30px;
+  }
+
+  ul:first-child,
+  ol:first-child {
+      margin-top: 0;
+  }
+
+  ul:last-child,
+  ol:last-child {
+      margin-bottom: 0;
+  }
+
+  blockquote {
+      font-family: 'Times New Roman', serif;
+      margin: 1rem 0 1rem 2rem;
+      position: relative;
+      border-left:none;
+  }
+
+  blockquote::before {
+      background: #f0b752;
+      content: '';
+      height: 100%;
+      left: -2rem;
+      position: absolute;
+      width: 0.25rem;
+  }
+
+  table {
+      font-size: 0.875rem;
+      padding: 0;
+      word-break: initial;
+  }
+
+  table tr {
+      border-top: 1px solid #57708d;
+      margin: 0;
+      padding: 0;
+  }
+
+  thead {
+      background-color: #324963;
+      color: #9dbbdd;
+  }
+
+  table tr th {
+      border: 1px solid #57708d;
+      border-bottom: solid 2px #ccc;
+      border-bottom: 0;
+      font-weight: bold;
+      margin: 0;
+      padding: 10px 16px;
+  }
+
+  table tr td {
+      background: #192534;
+      border: 1px solid #57708d;
+      margin: 0;
+      padding: 10px 16px;
+  }
+
+  table tr th:first-child,
+  table tr td:first-child {
+      margin-top: 0;
+  }
+
+  table tr th:last-child,
+  table tr td:last-child {
+      margin-bottom: 0;
+  }
+
+  ::selection{
+    background: #44AAAB;
+    color:#000;
+  }
