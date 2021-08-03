@@ -2,7 +2,7 @@
 
 ## React 宏观架构图
 
-<img :src="$withBase('/assets/img/core-packages.png')" alt="react内核3个包的主要职责和调用关系图">
+<img :src="$withBase('/assets/img/core-packages.png')" alt="react内核3个包的主要职责和调用关系图" data-zoomable>
 
 现附上 react 各模块之间的架构图，下文中各章节宏观掌控部分将会详细说明当前章节在此图中的位置，方便我们总体把握源码阅读的脉络。
 

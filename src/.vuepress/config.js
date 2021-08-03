@@ -131,7 +131,7 @@ const sidebar = {
 const nav = [
   // React 源码
   {
-    text: "🍇 React源码",
+    text: "React源码",
     ariaLabel: "React 源码菜单",
     items: [
       {
@@ -165,7 +165,7 @@ const nav = [
     ],
   },
   {
-    text: "🍇 vue3源码",
+    text: "vue3源码",
     ariaLabel: "vue3 源码菜单",
     items: [
       {
@@ -179,7 +179,7 @@ const nav = [
     ],
   },
   {
-    text: "🍓 博客",
+    text: "博客",
     link: "https://www.jonsam.site",
   },
 ];
@@ -188,12 +188,12 @@ module.exports = {
   /**
    * Ref：https://v1.vuepress.vuejs.org/config/#title
    */
-  title: "React 源码阅读笔记",
+  title: "FE Source Stack",
   // base,
   /**
    * Ref：https://v1.vuepress.vuejs.org/config/#description
    */
-  description: "react 16.8.6 源码解析笔记",
+  description: "源码阅读：react、vue3、webpack...",
 
   /**
    * Extra tags to be injected to the page HTML `<head>`
@@ -202,7 +202,7 @@ module.exports = {
    */
   head: [
     ["link", { rel: "manifest", href: "/manifest.json" }],
-    ["link", { rel: "icon", href: "/favicon.svg" }],
+    ["link", { rel: "icon", href: "/logo.png" }],
     ["meta", { name: "theme-color", content: "#3eaf7c" }],
     ["meta", { name: "apple-mobile-web-app-capable", content: "yes" }],
     [
@@ -218,7 +218,7 @@ module.exports = {
    */
   themeConfig: {
     repo: "https://github.com/jonsam-ng/fe-source-reading",
-    repoLabel: "🍈 Github",
+    repoLabel: "Github",
     docsDir: "src",
     docsBranch: "master",
     editLinks: true,
@@ -234,14 +234,6 @@ module.exports = {
       "/react/": sidebar.react,
       "/vue3/": sidebar.vue3,
     },
-    head: [
-      ["meta", { name: "theme-color", content: "#f08d49" }],
-      ["meta", { name: "apple-mobile-web-app-capable", content: "yes" }],
-      [
-        "meta",
-        { name: "apple-mobile-web-app-status-bar-style", content: "black" },
-      ],
-    ],
   },
 
   /**

@@ -1,7 +1,7 @@
 {
   "name": "react-source-reading",
   "version": "0.0.1",
-  "description": "react 16.8.6 源码解析笔记",
+  "description": "前端源码阅读笔记",
   "main": "index.js",
   "authors": {
     "name": "jonsam",

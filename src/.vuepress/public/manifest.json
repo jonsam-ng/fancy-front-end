@@ -3,7 +3,7 @@
   "name": "react 16.8.6 源码解析笔记",
   "icons": [
     {
-      "src": "favicon.svg",
+      "src": "logo.png",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     }

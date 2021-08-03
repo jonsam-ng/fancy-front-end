@@ -26,6 +26,13 @@ const p = new Proxy(target, handler)
 先来看一个最为重要的函数，这是实现 reactive/shallowReactive/readonly/shallowReadonly 这四个 api 的核心。
 
 ```ts
+export interface Target {
+  [ReactiveFlags.SKIP]?: boolean
+  [ReactiveFlags.IS_REACTIVE]?: boolean // 是否是 reactive 类型值
+  [ReactiveFlags.IS_READONLY]?: boolean // 是否是 readonly 类型值
+  [ReactiveFlags.RAW]?: any // 表示原始的值。
+}
+
 function createReactiveObject(
   target: Target, // reactive target
   isReadonly: boolean, // 是否只读
@@ -43,6 +50,7 @@ function createReactiveObject(
   // target is already a Proxy, return it.
   // exception: calling readonly() on a reactive object
   // 已经是一个 Proxy 对象，返回其本身
+  // 如果原始值已经存在，但是又不是 readonly 值和 reactive 值。
   if (
     target[ReactiveFlags.RAW] &&
     !(isReadonly && target[ReactiveFlags.IS_REACTIVE])
@@ -116,13 +124,7 @@ export function reactive(target: object) {
     reactiveMap
   )
 }
-```
 
-我们着重关注：mutableHandlers，mutableCollectionHandlers，reactiveMap 这 3 项。
-
-### mutableHandlers
-
-```ts
 export const mutableHandlers: ProxyHandler<object> = {
   get,
   set,
@@ -130,23 +132,151 @@ export const mutableHandlers: ProxyHandler<object> = {
   has,
   ownKeys
 }
+
+export const mutableCollectionHandlers: ProxyHandler<CollectionTypes> = {
+  get: /*#__PURE__*/ createInstrumentationGetter(false, false)
+}
+
+export const reactiveMap = new WeakMap<Target, any>()
 ```
 
-### mutableCollectionHandlers
-
-### reactiveMap
+handles 细节部分在 handler 文章中具体分析。
 
 ## readonly
 
-## isReactive
+::: tip 官网释义
+Takes an object (reactive or plain) or a ref and returns a readonly proxy to the original. A readonly proxy is deep: any nested property accessed will be readonly as well.
 
-## isReadonly
+接受一个对象 (响应式或纯对象) 或 ref 并返回原始对象的只读代理。只读代理是深层的：任何被访问的嵌套 property 也是只读的。
+:::
 
-## isProxy
+```ts
+export function readonly<T extends object>(
+  target: T
+): DeepReadonly<UnwrapNestedRefs<T>> {
+  return createReactiveObject(
+    target,
+    true,
+    readonlyHandlers,
+    readonlyCollectionHandlers,
+    readonlyMap
+  )
+}
+
+export const readonlyHandlers: ProxyHandler<object> = {
+  get: readonlyGet,
+  set(target, key) {
+    return true
+  },
+  deleteProperty(target, key) {
+    return true
+  }
+}
+
+export const readonlyCollectionHandlers: ProxyHandler<CollectionTypes> = {
+  get: /*#__PURE__*/ createInstrumentationGetter(true, false)
+}
+
+export const readonlyMap = new WeakMap<Target, any>()
+```
+
+- readonly 的对象的属性值是不可被 set 和 delete，均返回 true。
 
 ## shallowReactive
 
+::: tip 官网释义
+Creates a reactive proxy that tracks reactivity of its own properties but does not perform deep reactive conversion of nested objects (exposes raw values).
+
+创建一个响应式代理，它跟踪其自身 property 的响应性，但不执行嵌套对象的深层响应式转换 (暴露原始值)。
+:::
+
+```ts
+export function shallowReactive<T extends object>(target: T): T {
+  return createReactiveObject(
+    target,
+    false,
+    shallowReactiveHandlers,
+    shallowCollectionHandlers,
+    shallowReactiveMap
+  )
+}
+
+export const shallowReactiveHandlers = /*#__PURE__*/ extend(
+  {},
+  mutableHandlers,
+  {
+    get: shallowGet,
+    set: shallowSet
+  }
+)
+
+export const shallowCollectionHandlers: ProxyHandler<CollectionTypes> = {
+  get: /*#__PURE__*/ createInstrumentationGetter(false, true)
+}
+
+export const shallowReactiveMap = new WeakMap<Target, any>()
+
+export const extend = Object.assign
+```
+
 ## shallowReadonly
+
+::: tip 官网释义
+Creates a proxy that makes its own properties readonly, but does not perform deep readonly conversion of nested objects (exposes raw values).
+
+创建一个 proxy，使其自身的 property 为只读，但不执行嵌套对象的深度只读转换 (暴露原始值)。
+:::
+
+## isReadonly
+
+::: tip 官网释义
+Checks if an object is a readonly proxy created by readonly.
+
+检查对象是否是由 readonly 创建的只读代理。
+:::
+
+```ts
+export function isReadonly(value: unknown): boolean {
+  return !!(value && (value as Target)[ReactiveFlags.IS_READONLY])
+}
+```
+
+isReadonly 是通过检查 target 的 `__v_isReadonly` 标记实现的。
+
+## isReactive
+
+::: tip 官网释义
+Checks if an object is a reactive proxy created by reactive.
+
+检查对象是否是由 reactive 创建的响应式代理。
+:::
+
+```ts
+export function isReactive(value: unknown): boolean {
+  if (isReadonly(value)) {
+    return isReactive((value as Target)[ReactiveFlags.RAW])
+  }
+  return !!(value && (value as Target)[ReactiveFlags.IS_REACTIVE])
+}
+```
+
+如果 value 只读，检查原始值是否是 reactive 类型，否则检查 `__v_isReactive` 标记。
+
+## isProxy
+
+::: tip 官网释义
+Checks if an object is a proxy created by reactive or readonly.
+
+检查对象是否是由 reactive 或 readonly 创建的 proxy。
+:::
+
+```ts
+export function isProxy(value: unknown): boolean {
+  return isReactive(value) || isReadonly(value)
+}
+```
+
+检查是否是 reactive 类型或者 readonly 类型值。
 
 ## markRaw
 

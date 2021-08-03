@@ -1,15 +1,15 @@
 ---
 home: true
-heroImage: ./hero.png
-tagline: react 16.8.6 源码解析笔记
+heroImage: ./logo.png
+tagline: 源码阅读：react、vue3、webpack...
 actionText: 开始阅读 →
 actionLink: /react/
 features:
-- title: 任务调度
-  details: 更新任务是如何调度的？
-- title: 渲染更新
-  details: 更新怎样同步到视图？
-- title: hooks 原理
-  details: 趴一下底层的原理
+- title: React
+  details: 调和、调度器、更新于渲染、hooks原理...
+- title: Vue3 
+  details: 响应式原理、runtime-core、runtime-dom...
+# - title: hooks 原理
+#   details: 趴一下底层的原理
 footer: Made by jonsam with ❤️
 ---
