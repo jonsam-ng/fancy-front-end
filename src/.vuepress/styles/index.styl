@@ -20,3 +20,38 @@ h2::before {
     color: #ffb11b;
     margin-right: 4px;
 }
+
+:root {
+  --bg: #fff;
+  --color: #333333;
+}
+
+html.dark-mode 
+  --bg: #232b32;
+  --color: #ddd8ca;
+  header.navbar
+    border-bottom: 1px solid #000;
+  aside.sidebar
+    border-right: 1px solid #333;
+  .search-box input
+    background-color: #464646;
+  tr:nth-child(2n)
+    background-color: #444440
+  th, td
+    border-color: #646460
+  h2
+    border-bottom-color: #646460
+  .home .footer, .home .features
+    border-color: #646460
+
+html, body, header.navbar, aside.sidebar, header.navbar div.links, html .dropdown-wrapper .nav-dropdown, .custom-block.tip{
+  background-color: var(--bg);
+  color: var(--color);
+}
+html 
+  .navbar .site-name, a.sidebar-link, .sidebar-heading, .dropdown-wrapper .dropdown-title, .dropdown-wrapper .mobile-dropdown-title, .dropdown-wrapper .nav-dropdown .dropdown-item a,.page p.article-state span, .custom-block.warning, .custom-block.error
+    color: var(--color);
+
+html
+  .page-edit .edit-link, .page-edit .last-updated
+    font-size: 12px;

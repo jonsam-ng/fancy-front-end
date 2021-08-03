@@ -20,8 +20,12 @@
     "@vuepress/plugin-pwa": "^1.8.2",
     "node-sass": "^6.0.1",
     "sass-loader": "^12.1.0",
-    "vuepress": "^1.5.3",
+    "vuepress": "^1.8.2",
     "vuepress-plugin-global-toc": "^1.1.0",
     "vuepress-plugin-reading-time": "^0.1.1"
+  },
+  "dependencies": {
+    "@vue-a11y/dark-mode": "^1.1.1",
+    "global": "^4.4.0"
   }
 }

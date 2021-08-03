@@ -9,4 +9,4 @@ reconciler 在运作过程中，可分为如下四个阶段：
 3. 任务回调与 FiberTree 的构建阶段
 4. 输出阶段
 
-<img :src="$withBase('/assets/img/reactfiberworkloop.png')" alt="reconciler 运作流程图">
+<img :src="$withBase('/assets/img/reactfiberworkloop.png')" alt="reconciler 运作流程图" data-zoomable />
