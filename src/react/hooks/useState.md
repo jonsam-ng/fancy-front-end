@@ -843,7 +843,7 @@ function reducer(state, action): state // 本质上是一个状态转换器
 
 - 在一个 hook 执行期间，首次更新渲染（不是 mount 时的渲染）和多次更新渲染所使用的 updateState 的逻辑是不一样的。首次更新渲染需要过滤掉优先级较低的 update ，多次更新渲染则直接对所有 update 进行 reduce（reduce 就是计算 newState 的过程）。
 - resetHooks 方法 会在 performSyncWorkOnRoot/performConcurrentWorkOnRoot → handleError 中调用。这说明在react 执行期间，如果不出意外的话就一直属于 hook 运行的生命周期。
-- TOFIX 为什么会针对首次更新渲染有这样的不同？
+<!-- TODO 为什么会针对首次更新渲染有这样的不同？ -->
 - Batched Updates
 
 这里的核心逻辑就是对 hook 中的 queue 下的更新进行合并更新。合并更新是在一次发生的，也就是说 react 对用户的 dispatchAction 并非一次一次的更新，而是在 dispatchAction 和真正的 reduce updates 这中间做了一个合流，在 reduce update 之后产生新的状态到真正的渲染，也就是 renderWithHooks 这中间又间隔着调度器的调度，相当于又一次的合流。这样的两次合流，就是的从 dispatchAction 到 render 之间的损耗大大减小，渲染的效率有了很大的提高。就像千万溪流汇聚成大海，这样的渲染就节省了很多的中间状态的开支。

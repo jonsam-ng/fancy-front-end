@@ -571,7 +571,7 @@ const {
 这些方法是 SchedulerWithReactIntegration 基于调度器的封装。
 
 - `getCurrentPriorityLevel`: 从调度器获取当前调度的优先级。
-- `runWithPriority`：// FIXME
+<!-- TODO - `runWithPriority` -->
 - `scheduleSyncCallback`: 通过调度器调度同步任务并维护同步更新列表 syncQueue。
 - `cancelCallback`: 从调度器中取消当前的回调。
 - `flushSyncCallbackQueue`: 批量执行 syncQueue 中的同步更新。

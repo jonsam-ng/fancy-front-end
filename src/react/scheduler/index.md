@@ -35,3 +35,10 @@ export {
   forceFrameRate as unstable_forceFrameRate,
 };
 ```
+
+<!-- TODO 调度器宏观原理图 -->
+
+## 参考资料
+
+- [一篇长文帮你彻底搞懂React的调度机制原理](https://segmentfault.com/a/1190000039101758)
+- [浏览器的 16ms 渲染帧](https://harttle.land/2017/08/15/browser-render-frame.html)

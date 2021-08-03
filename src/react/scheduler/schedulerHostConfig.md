@@ -8,7 +8,7 @@
 
 ## 非 DOM 环境
 
-<Badges :content="[{type: 'tip', text: '了解'}]" />
+<Badges :content="[{type: 'warning', text: '了解'}]" />
 
 在非 DOM 环境中，不存在 rAF Api，因此采用了原生的 setTimeout 来模拟。这里主要用于 node 环境。
 
@@ -99,7 +99,7 @@ requestHostCallback = function (callback) {
       port.postMessage(null);
     }
   } else {
-    // 如果enableMessageLoopImplementation为 false，即没有打开消息循环的特性，就直接用 RAF 循环实现
+    // 如果enableMessageLoopImplementation为 false，即没有打开消息循环的特性(不使用 messageChannel Api)，就直接用 RAF 循环实现
     if (!isRAFLoopRunning) {
       // Start a rAF loop.
       isRAFLoopRunning = true;
@@ -128,6 +128,8 @@ channel.port1.onmessage = performWorkUntilDeadline;
 
 ### performWorkUntilDeadline: 执行回调函数
 
+performWorkUntilDeadline 函数是调度任务的执行者，
+
 ```js
 // 执行回调任务
 const performWorkUntilDeadline = () => {
@@ -140,20 +142,22 @@ const performWorkUntilDeadline = () => {
       // 在 frameLength 之后 yield，因此在消息时间开始时有剩余的时间
       frameDeadline = currentTime + frameLength;
       const hasTimeRemaining = true;
-      // 调用回调函数，回调函数会返回 hasMoreWork
+      // 调用回调函数，回调函数返回布尔值表示是否中断
       try {
         const hasMoreWork = scheduledHostCallback(
           hasTimeRemaining,
           currentTime,
         );
-        // 如果没有更多任务就打开消息循环锁，清空 scheduledHostCallback
+        // 没有更多任务，清空 scheduledHostCallback
+        // 结合到 react 逻辑，如果没有中断，本次回调结束
         if (!hasMoreWork) {
           isMessageLoopRunning = false;
           scheduledHostCallback = null;
         } else {
           // If there's more work, schedule the next message event at the end
           // of the preceding one.
-          // 继续发起下一个事件回调
+          // 如果有更多的任务，继续发起下一个事件回调
+          // 结合 react 逻辑，如果有中断，在发一次消息，排除一个执行者
           port.postMessage(null);
         }
       } catch (error) {

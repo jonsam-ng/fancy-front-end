@@ -3,6 +3,7 @@ const { description } = require("../../package");
 const base = "/fe-source-reading/";
 // React 源码目录
 const reactPath = "/react";
+const vue3Path = "/vue3";
 
 // 侧边栏配置
 const sidebar = {
@@ -84,13 +85,53 @@ const sidebar = {
       children: [`${reactPath}/summary/bitOperation`],
     },
   ],
+  vue3: [
+    {
+      title: "开始上手",
+      collapsable: true,
+      path: `${vue3Path}/`,
+      sidebarDepth: 1,
+    },
+    {
+      title: "基础",
+      collapsable: false,
+      path: `${vue3Path}/basic/`,
+      sidebarDepth: 2,
+      children: [],
+    },
+    {
+      title: "reactivity",
+      collapsable: false,
+      path: `${vue3Path}/reactivity/`,
+      sidebarDepth: 2,
+      children: [
+        `${vue3Path}/reactivity/ref`,
+        `${vue3Path}/reactivity/reactive`,
+        `${vue3Path}/reactivity/effect`,
+      ],
+    },
+    {
+      title: "runtime-core",
+      collapsable: false,
+      path: `${vue3Path}/runtime-core/`,
+      sidebarDepth: 2,
+      children: [],
+    },
+    {
+      title: "runtime-dom",
+      collapsable: false,
+      path: `${vue3Path}/runtime-dom/`,
+      sidebarDepth: 2,
+      children: [],
+    },
+  ],
 };
 
 // 顶部导航配置
 const nav = [
   // React 源码
   {
-    text: "🍇 React 源码",
+    text: "🍇 React源码",
     ariaLabel: "React 源码菜单",
     items: [
       {
@@ -120,6 +161,20 @@ const nav = [
       {
         text: "总结",
         link: `${reactPath}/summary/`,
+      },
+    ],
+  },
+  {
+    text: "🍇 vue3源码",
+    ariaLabel: "vue3 源码菜单",
+    items: [
+      {
+        text: "基础",
+        link: `${vue3Path}/basic/`,
+      },
+      {
+        text: "reactivity",
+        link: `${vue3Path}/reactivity/`,
       },
     ],
   },
@@ -173,9 +228,11 @@ module.exports = {
     logo: "/logo.png",
     smoothScroll: true,
     nav,
+    sidebarDepth: 2,
     sidebar: {
       collapsable: false,
       "/react/": sidebar.react,
+      "/vue3/": sidebar.vue3,
     },
     head: [
       ["meta", { name: "theme-color", content: "#f08d49" }],
