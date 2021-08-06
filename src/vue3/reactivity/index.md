@@ -62,6 +62,22 @@ export { TrackOpTypes, TriggerOpTypes } from './operations'
 
 以上注释部分均属于 Reactivity Api，effect 部分属于副作用，这部分将在 runtime-core 中引用。
 
+## 文件及作用
+
+reactivity 模块中包括如下文件：
+
+```txt
+packages/reactivity/src
+├── baseHandlers.ts // COMMON type: array/object proxy handlers.
+├── collectionHandlers.ts // COLLECTION type: map/set/weakSet/weakMap proxy handlers.
+├── computed.ts // 计算响应式
+├── effect.ts // 依赖（副作用）收集和管理
+├── index.ts // 导出 API
+├── operations.ts // operations 相关
+├── reactive.ts // reactive 相关 API
+└── ref.ts // ref 相关 API
+```
+
 ## 参考文档
 
 - [vue3 docs: Reactivity API](https://v3.vuejs.org/api/reactivity-api.html)

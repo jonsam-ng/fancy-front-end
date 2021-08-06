@@ -107,6 +107,7 @@ const sidebar = {
       children: [
         `${vue3Path}/reactivity/ref`,
         `${vue3Path}/reactivity/reactive`,
+        `${vue3Path}/reactivity/handler`,
         `${vue3Path}/reactivity/effect`,
       ],
     },

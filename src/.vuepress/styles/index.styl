@@ -59,12 +59,12 @@ html
 
 html
   .page-edit .edit-link, .page-edit .last-updated
-    font-size: 12px;
+    font-size: 14px;
   aside.sidebar .sidebar-links li
     a.sidebar-link
-      font-size: 12px;
+      font-size: 14px;
   .sidebar-heading
-    font-size: 12px;
+    font-size: 14px;
   
 ::-webkit-scrollbar{
   width:4px;
@@ -79,6 +79,11 @@ html
 ::-webkit-scrollbar-thumb:active {
   background-color: #44AAAB !important;
   border-radius: 2px;
+}
+
+html body :not([class*="rwl-exempt"]) ::selection{
+  background: #44AAAB!important;
+  color:#000;
 }
 
 html.light-mode main.page
@@ -109,7 +114,7 @@ html.light-mode main.page
     "Roboto Mono", Courier, Monospace !important;
   --header-weight: bold;
 
-  font-size: 12px;
+  font-size: 14px;
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
   text-rendering: optimizelegibility;
@@ -134,7 +139,6 @@ html.light-mode main.page
   h4,
   h5,
   h6 {
-    position: relative;
     font-weight: var(--header-weight);
     cursor: text;
     color: var(--title-color);
@@ -262,7 +266,7 @@ html.dark-mode main.page
   --control-text-hover-color: #f0b752;
   --heading-char-color: #f0b752;
   
-  font-size: 12px;
+  font-size: 14px;
   color: #a9aaab;
   font-family: Helvetica, Arial, sans-serif;
   height: 100%;
@@ -276,26 +280,19 @@ html.dark-mode main.page
   h6 {
       cursor: text;
       font-weight: bold;
-      line-height: 1.4;
-      position: relative;
   }
 
   h1 {
       border-bottom: 1px solid #f79f2a;
       font-size: 1.3em;
-      line-height: 1.2;
-      padding-bottom: 0.3em;
   }
 
   h2 {
       font-size: 1.25em;
-      line-height: 1.225;
-      padding-bottom: 0.3em;
   }
 
   h3 {
       font-size: 1.2em;
-      line-height: 1.43;
   }
 
   h4 {
@@ -405,9 +402,4 @@ html.dark-mode main.page
   table tr th:last-child,
   table tr td:last-child {
       margin-bottom: 0;
-  }
-
-  ::selection{
-    background: #44AAAB;
-    color:#000;
   }
