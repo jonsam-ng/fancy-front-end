@@ -37,6 +37,7 @@ yarn
 ## 参考资料
 
 - [vue3js.cn](https://vue3js.cn/start/)
+- [vue3源码解析和最佳实践](https://vue3.w2deep.com/source-code/)
 
 ## TODO 计划
 

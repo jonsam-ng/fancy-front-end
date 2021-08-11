@@ -393,6 +393,166 @@ collectionHandlers 源码见文件 reactivity/collectionHandlers.ts。collection
 
 用于 reactive、readonly、shallowReactive 和 shallowReadonly 四种响应式 API（所有）。
 
+```ts
+function createInstrumentationGetter(isReadonly: boolean, shallow: boolean) {
+  // 根据 isReadonly 和 shallow 选择不同 instrumentations。
+  const instrumentations = shallow
+    ? isReadonly
+      ? shallowReadonlyInstrumentations
+      : shallowInstrumentations
+    : isReadonly
+      ? readonlyInstrumentations
+      : mutableInstrumentations
+
+  return (
+    target: CollectionTypes,
+    key: string | symbol,
+    receiver: CollectionTypes
+  ) => {
+    // buildin 的属性
+    if (key === ReactiveFlags.IS_REACTIVE) {
+      return !isReadonly
+    } else if (key === ReactiveFlags.IS_READONLY) {
+      return isReadonly
+    } else if (key === ReactiveFlags.RAW) {
+      return target
+    }
+
+    // 如果获取内置方法属性就从 instrumentations 中获取，否则从 target 获取，这是普通的取值操作
+    return Reflect.get(
+      hasOwn(instrumentations, key) && key in target
+        ? instrumentations
+        : target,
+      key,
+      receiver
+    )
+  }
+}
+```
+
+这段代码机器简洁，核心代码就在 return 语句中，如果 key 值在 instrumentations 中就从 instrumentations 取，否则就从 target 中取。而且我们已经注意到非常疑惑的一点就是：对于 CollectionTypes，似乎只配置了 get handler，这是非常奇怪的，Proxy 对这些集合对象的拦截肯定是没有问题的，那这到底是为什么呢？我们先来运行一些测试代码：
+
+```ts
+const m = new Map([["name", 'any']]);
+const p = new Proxy(m, {
+  get(target, key, receiver) {
+    const v = Reflect.get(...arguments);
+    console.info('==> get', key);
+    return typeof v === "function" ? v.bind(target) : v;
+  },
+  set(target, key, receiver) {
+    const v = Reflect.set(...arguments);
+    console.info('==> set', key);
+    return typeof v === "function" ? v.bind(target) : v;
+  },
+})
+// 以下代码在 console 中逐句运行
+p.get("name");
+// >> ==> get get
+p.set('name', 'some')
+// >> ==> get set
+p.delete("name")
+// >> ==> get delete
+p.clear()
+// >> ==> get clear
+p.entries()
+// >> ==> get entries
+```
+
+现在我们知道原因了：`Proxy Api 对于集合对象只会触发 get handler，其他都不会触发`。也就是说，我们只需要拦截 get 然后根据 key 做不同的处理即可。从上面的代码中可以看到，根据 isReadonly 和 shallow
+的值选择了不同的 instrumentations，这个 instrumentations 中就包含了对于不同 key 值的处理。
+
+### createInstrumentations
+
+这个一个工厂函数，这个函数创建 isReadOnly 和 shallow 不同场景下的 handlers。
+
+```ts
+function createInstrumentations() {
+  // reactive
+  const mutableInstrumentations: Record<string, Function> = {
+    get(this: MapTypes, key: unknown) {
+      return get(this, key)
+    },
+    get size() {
+      return size((this as unknown) as IterableCollections)
+    },
+    has,
+    add,
+    set,
+    delete: deleteEntry,
+    clear,
+    forEach: createForEach(false, false)
+  }
+  // shallowReactive
+  const shallowInstrumentations: Record<string, Function> = {
+    get(this: MapTypes, key: unknown) {
+      return get(this, key, false, true)
+    },
+    get size() {
+      return size((this as unknown) as IterableCollections)
+    },
+    has,
+    add,
+    set,
+    delete: deleteEntry,
+    clear,
+    forEach: createForEach(false, true)
+  }
+  // readOnly
+  const readonlyInstrumentations: Record<string, Function> = {
+    get(this: MapTypes, key: unknown) {
+      return get(this, key, true)
+    },
+    get size() {
+      return size((this as unknown) as IterableCollections, true)
+    },
+    has(this: MapTypes, key: unknown) {
+      return has.call(this, key, true)
+    },
+    add: createReadonlyMethod(TriggerOpTypes.ADD),
+    set: createReadonlyMethod(TriggerOpTypes.SET),
+    delete: createReadonlyMethod(TriggerOpTypes.DELETE),
+    clear: createReadonlyMethod(TriggerOpTypes.CLEAR),
+    forEach: createForEach(true, false)
+  }
+  // shallowReadOnly
+  const shallowReadonlyInstrumentations: Record<string, Function> = {
+    get(this: MapTypes, key: unknown) {
+      return get(this, key, true, true)
+    },
+    get size() {
+      return size((this as unknown) as IterableCollections, true)
+    },
+    has(this: MapTypes, key: unknown) {
+      return has.call(this, key, true)
+    },
+    add: createReadonlyMethod(TriggerOpTypes.ADD),
+    set: createReadonlyMethod(TriggerOpTypes.SET),
+    delete: createReadonlyMethod(TriggerOpTypes.DELETE),
+    clear: createReadonlyMethod(TriggerOpTypes.CLEAR),
+    forEach: createForEach(true, true)
+  }
+  ```
+
+  我们来看一下核心的几个函数是如何处理的：
+  <!-- TODO not so important -->
+
+  ### get
+
+  ### size
+
+  ### has
+
+  ### add
+
+  ### set
+
+  ### delete
+
+  ### clear
+  ### forEach
+
+
 ## Q&A
 
 ### Proxy Handlers 类别与权限的关系？
