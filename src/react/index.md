@@ -74,9 +74,10 @@ yarn start
 
 - [x]useState
 - [x]useEffect
-- []useReducer
-- []useRef
+- [x]useReducer
+- [x]useRef
 - []useContext
+- FC 与 hook 机制
 
 ### Summary
 

@@ -16,7 +16,7 @@ useContext, // 从 context 中获得 provider 传递的数据，经常和 create
 useEffect, // 执行副作用，包括网络请求，数据交互，UI 更新等。
 useImperativeHandle, // 将组件内部的变量或者方法暴露给外部，外部可使用 ref 进行调用。
 useDebugValue, // debug 时的优化项
-useLayoutEffect, // 在 DOM 更新之后执行副作用
+useLayoutEffect, // 在 DOM 更新之后浏览器执行绘制之前同步的执行副作用
 useMemo, // 缓存变量
 useReducer, // 用于状态管理（数据共享），可以调用 reducer，常与 useContext 一起使用
 useRef, // 非响应式的数据暂存
@@ -106,8 +106,10 @@ type Dispatcher = {
     C > ,
 };
 ```
+
 可见所有的 hook 都是由 dispatcher 来调度执行的。那么 dispatcher 只有一种吗？dispatcher 不止以一种，包括 **ContextOnlyDispatcher**、**HooksDispatcherOnMount**、**HooksDispatcherOnUpdate** 三种，还有一些 dev 环境的 dispatcher。
 可以把 dispatcher 看做是一个 hook 的分发器，在不同的渲染阶段由不同的分发器来进行调度。那么不同的分发器有什么区别呢？我们来看一下这三种分发器：
+
 ```js
 export const ContextOnlyDispatcher: Dispatcher = {
     readContext,
@@ -156,6 +158,7 @@ const HooksDispatcherOnUpdate: Dispatcher = {
     useResponder: createResponderListener,
 };
 ```
+
 可见分发器的区别在于 hook 的实例是不同的，ContextOnlyDispatcher 中直接报 `Invalid hook call` 的错误，`HooksDispatcherOnMount 中是 Mount 阶段的 hook，而HooksDispatcherOnUpdate 中是 update 阶段的 hook`。一个很明显的区别就是 HooksDispatcherOnMount 中的 hook 会做一些初始化、初始值的操作，而 HooksDispatcherOnUpdate 中的 hook 主要做一些更新的操作。
 
 ### dispatcher 是如何调度的？
@@ -861,7 +864,7 @@ do {
 
 看到这里还有一些细节问题：
 
-### useState 是实时引起 UI 更新吗？
+### useState 是同步引起 UI 更新吗？
 
 在这个部分里，只是对 newState 做了计算，最终 newState 被挂载在了 hook.memoizedState 上（也就是说更新了 hook.memoizedState 的值），在需要 reRender 时将 didReceiveUpdate 标记为了 true。真正的 UI 的更新，还得跟 render 部分和调度器有关。didReceiveUpdate 主要在 react-reconciler 包中 ReactFiberBeginWork.js 中被使用。useState 只是对 didReceiveUpdate 做了标记，UI 更新会在 setState 之后 dispatchAction 中 scheduleWork 的调用后由调度器进行调度更新。
 

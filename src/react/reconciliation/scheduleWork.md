@@ -1,4 +1,4 @@
-# scheduleWork与调度入口
+# scheduleWork与调度过程
 
 <TimeToRead />
 
@@ -514,6 +514,9 @@ function pushInteractions(root) {
 上面经过我们的分析，无论是异步回调还是非 FirstRender 的同步回调，都由调度器交接了后续的工作，还剩余一种情况那就 FirstRender 我们还没有分析。我们已经知道 FirstRender 是不会交给调度器去调度的，而是直接由调和器执行了后续的更新回调。在这里我们就来看一下 FirstRender 是怎么处理的，当前我们不会分析的太具体，因为在后续的 `更新周期` 章节中将会对更新最详细的分析。
 
 ## performSyncWorkOnRoot：同步任务调度更新
+
+<!-- TODO -->
+## performConcurrentWorkOnRoot：异步任务调度更新
 
 <!-- TODO -->
 

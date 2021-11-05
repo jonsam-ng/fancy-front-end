@@ -1,11 +1,3 @@
-<!--
- * @Description: Some description
- * @Version: 1.0
- * @Author: jonsam
- * @Date: 2021-07-30 00:19:39
- * @LastEditors: jonsam
- * @LastEditTime: 2021-08-03 22:47:53
--->
 <template>
   <div class="badge-group">
     <span class="group-tag">标签：</span>

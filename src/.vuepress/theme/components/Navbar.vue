@@ -29,6 +29,7 @@
       "
     >
       <NavLinks class="can-hide" />
+      <FontResizer />
       <ThemeSwitcher />
       <AlgoliaSearchBox v-if="isAlgoliaSearch" :options="algolia" />
       <SearchBox
