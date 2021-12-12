@@ -1,0 +1,51 @@
+# 开始上手
+
+<TimeToRead />
+
+## 了解 vite
+
+要了解 vite，当然要从官网开始。vite 定位为下一代前端开发与构建工具，这体现在 vite 具有的如下特点：
+
+- 💡 极速的服务启动：使用原生 ESM 文件，**无需打包**!
+
+在 webpack 中，资源被打包成 chunk 以驱动程序运行，这其中产品的成本包括: 1.资源打包的成本。2.未加载的资源被打包的成本，因此即时是 dev server 中使用了热更新的优化，仍然无法彻底解决庞大的项目打包的速度问题。vite 则另辟蹊径，使用原生的 ESM 来作为 dev server 的资源分发，利用了现在浏览器对 ESM 的原生支持，同时借助浏览器发起的资源请求按需加载资源，可以说是完美的解决了传统的打包器的弊端。vite 解决资源打包成本问题是因为它根本就不打包，解决冗余资源加载成本问题是因为浏览器原生的按需请求。当然，只有现代浏览器才原生支持 ESM 会成为 vite 的弊端吗？其实不然，因为利用 ESM 打包是在 development 环境下才会使用的，毕竟有哪个开发者会使用陈旧的浏览器进行开发呢？实际上在 production 环境会使用类 rollup 的原理进行资源打包，既满足了轻量级的条件，同时也借用了 rollup 的开发生态。
+
+- ⚡️ 轻量快速的热重载：无论应用程序大小如何，都始终极快的模块热重载（HMR）
+
+所谓 HMR，就是 hot module reload，是指在更新代码后快速的重载应用。
+
+- 🛠️ 丰富的功能：对 TypeScript、JSX、CSS 等支持开箱即用。
+
+TypeScript 支持不必多言，vite 本身就是 TypeScript 写的。vite 作为一款通用的打包器，除了支持丝滑的 vue3 之外，还支持其他的框架和技术栈。相比于 webpack 这样的老牌打包器，vite 最大的优势就是优秀的开发体验，对于大型项目而言，打包速度依然不减。生产中常配合 vite 和 webpack 使用，vite 用于 development 环境，而将 webpack 用于生产环境的打包，这很大程度上是因为 webpack 成熟的生态和灵活的配置。
+
+- 📦 优化的构建：可选 “多页应用” 或 “库” 模式的预配置 Rollup 构建
+
+- 🔩 通用的插件：在开发和构建之间共享 Rollup-superset 插件接口。
+
+vite 在插件设计上兼容了 rollup 的插件生态，同时支持 vite 独有的插件。
+
+- 🔑 完全类型化的API：灵活的 API 和完整 TypeScript 类型。
+
+上面是官网中支持的 vite 特点，在之后的源码解读中将逐渐体现这些方面。想要了解 vite 更多可以移步：[vite: 指引](https://cn.vitejs.dev/guide/why.html)
+
+## 说明
+
+| 事项          | 描述                                                                                             |
+| ------------- | ------------------------------------------------------------------------------------------------ |
+| vite 版本     |                                                                                                  |
+| IDE           | VSCode                                                                                           |
+| 笔记源码 Repo | [https://github.com/jonsam-ng/fe-source-reading](https://github.com/jonsam-ng/fe-source-reading) |
+| 笔记地址      | [https://source.jonsam.site](https://source.jonsam.site/vite)                                    |
+| 阅读重点      | 解析依赖、解析源码、dev server、HMR、对 SFC 和 JSX 的支持                                        |  |
+| 阅读方式      | 运行源码、源码标注、笔记分析总结                                                                 |
+
+## 参考链接
+
+- [vitejs/vite](https://github.com/vitejs/vite)
+- [Vite 官方中文文档](https://cn.vitejs.dev/)
+
+## TODO 计划
+
+## 目录
+
+<GlobalTableOfContents />

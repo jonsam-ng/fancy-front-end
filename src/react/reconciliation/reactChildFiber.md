@@ -6,7 +6,7 @@
 
 [[TOC]]
 
-ReactChildFiber 的创建过程分为调和和挂载两种过程。这两个过程都调用了 `ChildReconciler` 这个函数。这个函数比较复杂，我们分解来看。
+ReactChildFiber 的创建过程分为调和和挂载两种过程。这两个过程都调用了 `ChildReconciler` 这个函数。这个函数比较复杂，我们分解来看。
 
 ```js
 export const reconcileChildFibers = ChildReconciler(true);

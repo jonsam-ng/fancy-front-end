@@ -2,6 +2,18 @@
 const reactPath = "/react";
 // Vue3 文档目录
 const vue3Path = "/vue3";
+// 数据结构目录
+const dataStructurePath = "/data-structure";
+// 算法目录
+const algorithmPath = "/algorithm";
+// webpack 目录
+const webpackPath = "/webpack";
+// vite 目录
+const vitePath = "/vite";
+// am-editor 目录
+const amEditorPath = "/am-editor";
+// typescript-utility
+const typescriptUtilityPath = "/typescript-utility";
 
 const sidebar = {
   // React 源码分析
@@ -128,6 +140,100 @@ const sidebar = {
       children: [],
     },
   ],
+  algorithm: [
+    {
+      title: "开始上手",
+      collapsable: true,
+      path: `${algorithmPath}/`,
+      sidebarDepth: 1,
+    },
+  ],
+  dataStructure: [
+    {
+      title: "开始上手",
+      collapsable: true,
+      path: `${dataStructurePath}/`,
+      sidebarDepth: 1,
+    },
+    {
+      title: "链表",
+      collapsable: false,
+      path: `${dataStructurePath}/linked-list/`,
+      sidebarDepth: 2,
+      children: [`${dataStructurePath}/linked-list/single`],
+    },
+  ],
+  vite: [
+    {
+      title: "开始上手",
+      collapsable: true,
+      path: `${vitePath}/`,
+      sidebarDepth: 1,
+    },
+    {
+      title: "基础",
+      collapsable: false,
+      path: `${vitePath}/basic/`,
+      sidebarDepth: 2,
+      children: [],
+    },
+    {
+      title: "vite-core",
+      collapsable: false,
+      path: `${vitePath}/vite/`,
+      sidebarDepth: 2,
+      children: [`${vitePath}/vite/cli`, `${vitePath}/vite/server`],
+    },
+  ],
+  amEditor: [
+    {
+      title: "开始上手",
+      collapsable: true,
+      path: `${amEditorPath}/`,
+      sidebarDepth: 1,
+    },
+    {
+      title: "engine",
+      collapsable: false,
+      path: `${amEditorPath}/engine/`,
+      sidebarDepth: 2,
+      children: [
+        `${amEditorPath}/engine/engine-basic`,
+        `${amEditorPath}/engine/engine`,
+      ],
+    },
+  ],
+  typescriptUtility: [
+    {
+      title: "开始上手",
+      collapsable: true,
+      path: `${typescriptUtilityPath}/`,
+      sidebarDepth: 1,
+    },
+    {
+      title: "基础",
+      collapsable: false,
+      path: `${typescriptUtilityPath}/basic/`,
+      sidebarDepth: 2,
+      children: [
+        `${typescriptUtilityPath}/basic/basic-types`,
+        `${typescriptUtilityPath}/basic/type-manipulation`,
+        `${typescriptUtilityPath}/basic/classes`,
+        `${typescriptUtilityPath}/basic/modules`,
+        `${typescriptUtilityPath}/basic/reference`,
+      ],
+    },
+    {
+      title: "Utility Types",
+      collapsable: false,
+      path: `${typescriptUtilityPath}/utility-types/`,
+      sidebarDepth: 2,
+      children: [
+        `${typescriptUtilityPath}/utility-types/basic`,
+        `${typescriptUtilityPath}/utility-types/mapped-types`,
+      ],
+    },
+  ],
 };
 
 // 顶部导航配置
@@ -178,6 +284,70 @@ const nav = [
       {
         text: "reactivity",
         link: `${vue3Path}/reactivity/`,
+      },
+    ],
+  },
+  {
+    text: "数据结构与算法",
+    ariaLabel: "数据结构与算法",
+    items: [
+      {
+        text: "数据结构",
+        link: `${dataStructurePath}/`,
+      },
+      {
+        text: "算法",
+        link: `${algorithmPath}/`,
+      },
+    ],
+  },
+  {
+    text: "更多",
+    ariaLabel: "更多内容",
+    items: [
+      {
+        text: "webpack源码",
+        link: `${webpackPath}/`,
+      },
+      {
+        text: "am-editor源码",
+        link: `${amEditorPath}/`,
+      },
+      {
+        text: "ant-design-vue源码",
+        link: `${webpackPath}/`,
+      },
+      {
+        text: "hls.js源码",
+        link: `${webpackPath}/`,
+      },
+      {
+        text: "create-react-app源码",
+        link: `${webpackPath}/`,
+      },
+      {
+        text: "vite源码",
+        link: `${vitePath}/`,
+      },
+      {
+        text: "solid.js源码",
+        link: `${webpackPath}/`,
+      },
+      {
+        text: "svelte源码",
+        link: `${webpackPath}/`,
+      },
+      {
+        text: "axios源码",
+        link: `${webpackPath}/`,
+      },
+      {
+        text: "express源码",
+        link: `${webpackPath}/basic/`,
+      },
+      {
+        text: "Typescript Utility",
+        link: `${typescriptUtilityPath}/`,
       },
     ],
   },

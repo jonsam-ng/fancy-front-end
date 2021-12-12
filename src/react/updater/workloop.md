@@ -115,7 +115,7 @@ ReactCurrentOwner.current = null;
 
 <Badges :content="[{type: 'tip', text: '重要'}]" />
 
-beginWork 函数标胶复杂，他的大致思路如下：
+beginWork 函数比较复杂，他的大致思路如下：
 
 ```js
 function () {
@@ -542,7 +542,18 @@ function beginWork(
 简要分析下这段代码：
 
 1. beginWork 内部是区分 mount 阶段和 update 阶段来处理的，在 update 阶段只有 workInProgress 的优先级小于 render 优先级即 renderExpirationTime 时才会提前退出，返回 null 或者 child 或者其他特殊情况。这也就是说 下面的一系列的 mountComponent 或者 updateComponent 其实是在 mount 阶段和 update 阶段都会执行的。
-2. 两段 switch case 的代码比较复杂，之后单独分析。大致上第一段 switch case 代码段执行了一系列入栈操作在 completeWork 函数中执行了一些列的出栈操作。具体作用后面具体剖析。
+2. 两段 switch case 的代码比较复杂，之后单独分析。大致上第一段 switch case 代码段执行了一系列入栈操作在 completeWork 函数中执行了一些列的出栈操作。具体作用后面具体剖析。第二段 switch case 代码比较重要，下面来先分析分析。
 <!-- 3. didReceiveUpdate 标记的作用。TODO -->
 
-## 
+## mountIndeterminateComponent
+
+我们先来弄清楚 **IndeterminateComponent** 是什么？
+
+在 shared/ReactWorkTags.js 文件中可以查到 IndeterminateComponent 的定义。从注释来看，IndeterminateComponent 应该是在未知是 FC(Function Component) 还是 CC(Class Function) 之前，为组件设定的临时类型。因此这种类型很有可能只在 mount 阶段出现，在 update 阶段会更新为 FunctionComponent 或者 ClassComponent。
+
+另外，从 mountLazyComponent 中调用 resolveLazyComponentTag 函数来看，如果 lazy component 不被识别为 ClassComponent、FunctionComponent、ForwardRef 或者 MemoComponent，就会被认为是 IndeterminateComponent 类型。
+
+```ts
+export const IndeterminateComponent = 2; // Before we know whether it is function or class
+```
+

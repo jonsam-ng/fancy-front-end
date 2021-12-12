@@ -52,6 +52,11 @@ module.exports = {
       collapsable: false,
       "/react/": sidebar.react,
       "/vue3/": sidebar.vue3,
+      "/algorithm/": sidebar.algorithm,
+      "/data-structure/": sidebar.dataStructure,
+      "/vite/": sidebar.vite,
+      "/am-editor": sidebar.amEditor,
+      "/typescript-utility": sidebar.typescriptUtility,
     },
   },
 
