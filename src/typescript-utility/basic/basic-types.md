@@ -356,3 +356,16 @@ A tuple with a rest element has no set “length” - it only has a set of well-
 带有 rest 元素的 tuple 没有设置“长度”——它只有一组位于不同位置的已知元素。
 
 - readonly Tuple Types 元组类型
+
+## modules 模块
+
+### Non-modules 非模块
+
+The JavaScript specification declares that any JavaScript files without an export or top-level await should be considered a script and not a module.
+JavaScript 规范声明，任何没有导出或顶级等待的 JavaScript 文件都应该被视为脚本，而不是模块。
+
+### CommonJS and ES Modules interop 和 ES 模块互操作
+
+There is a mis-match in features between CommonJS and ES Modules regarding the distinction between a default import and a module namespace object import. TypeScript has a compiler flag to reduce the friction between the two different sets of constraints with esModuleInterop.
+
+关于默认导入和模块名称空间对象导入之间的区别，CommonJS 和 ES Modules 之间的特性不匹配。TypeScript 有一个编译器标志，以减少 esModuleInterop 中两组不同约束之间的摩擦。

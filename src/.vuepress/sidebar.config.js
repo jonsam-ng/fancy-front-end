@@ -14,6 +14,8 @@ const vitePath = "/vite";
 const amEditorPath = "/am-editor";
 // typescript-utility
 const typescriptUtilityPath = "/typescript-utility";
+// JQuery 目录
+const jQueryPath = "/jquery";
 
 const sidebar = {
   // React 源码分析
@@ -200,6 +202,9 @@ const sidebar = {
       children: [
         `${amEditorPath}/engine/engine-basic`,
         `${amEditorPath}/engine/engine`,
+        `${amEditorPath}/engine/container`,
+        `${amEditorPath}/engine/change`,
+        `${amEditorPath}/engine/range`,
       ],
     },
   ],
@@ -219,7 +224,6 @@ const sidebar = {
         `${typescriptUtilityPath}/basic/basic-types`,
         `${typescriptUtilityPath}/basic/type-manipulation`,
         `${typescriptUtilityPath}/basic/classes`,
-        `${typescriptUtilityPath}/basic/modules`,
         `${typescriptUtilityPath}/basic/reference`,
       ],
     },
@@ -348,6 +352,10 @@ const nav = [
       {
         text: "Typescript Utility",
         link: `${typescriptUtilityPath}/`,
+      },
+      {
+        text: "JQuery 源码",
+        link: `${jQueryPath}/`,
       },
     ],
   },
