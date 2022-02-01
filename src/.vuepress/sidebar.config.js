@@ -97,7 +97,10 @@ const sidebar = {
       collapsable: false,
       path: `${reactPath}/summary/`,
       sidebarDepth: 1,
-      children: [`${reactPath}/summary/bitOperation`],
+      children: [
+        `${reactPath}/summary/bitOperation`,
+        `${reactPath}/summary/first-render`,
+      ],
     },
   ],
   vue3: [
