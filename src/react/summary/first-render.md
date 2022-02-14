@@ -1,5 +1,6 @@
 # React 首次渲染过程
 
+<Badges :content="[{type: 'tip', text: 'React17'}]" />
 
 <TimeToRead />
 
@@ -314,7 +315,7 @@ slot: ""
 
 可以看到，这里 nodeType: 1，即为 ELEMENT_NODE。
 
-### legacyRenderSubtreeIntoContainer
+## legacyRenderSubtreeIntoContainer
 
 ```js
 // src/react/packages/react-dom/src/client/ReactDOMLegacy.js
@@ -402,8 +403,6 @@ export function getPublicRootInstance(
   }
 }
 ```
-
-关于 flushSync 这个函数：
 
 #### legacyCreateRootFromDOMContainer
 
@@ -584,7 +583,7 @@ export function listenToAllSupportedEvents(rootContainerElement: EventTarget) {
 
 以上是 react 事件监听的策略，真正的时间监听在函数 listenToNativeEvent 实现。那么 listenToNativeEvent 是如何监听原生事件的呢？请参见 [React 中的事件监听机制](./event-listener.md)
 
-### createFiberRoot
+## createFiberRoot
 
 ```js
 export function createFiberRoot(
@@ -777,7 +776,7 @@ Closure
 
 :::
 
-### createHostRootFiber
+## createHostRootFiber
 
 ```js
 export function createHostRootFiber(
@@ -1038,7 +1037,362 @@ FiberNode 中 Fiber 相关的属性构成了怎样的 FiberTree 的关系？
 render -> legacyRenderSubtreeIntoContainer -> legacyCreateRootFromDOMContainer -> createContainer -> createFiberRoot -> createHostRootFiber -> createFiber -> ...
 :::
 
+## flushSync
+
+从上面的过程，已经创建了 HostRoot 和 RootFiber，以及
+
+```ts
+flushSync(() => {
+  updateContainer(children, fiberRoot, parentComponent, callback);
+});
+```
+
+flushSync 函数处理同步渲染，在传入的回调中调用了 updateContainer 函数。
+
+下面是 flushSync 函数：
+
+```ts
+// Overload the definition to the two valid signatures.
+// Warning, this opts-out of checking the function body.
+declare function flushSync<R>(fn: () => R): R;
+// eslint-disable-next-line no-redeclare
+declare function flushSync(): void;
+// eslint-disable-next-line no-redeclare
+export function flushSync(fn) {
+  // In legacy mode, we flush pending passive effects at the beginning of the
+  // next event, not at the end of the previous one.
+  // rootWithPendingPassiveEffects 表示当前已经 commit 的 HostRoot
+  // 如果当前已存在 commit 的 HostRoot，且当前执行阶段不是 RenderContext 或者 CommitContext，则 flush 所有待渲染的副作用
+  if (
+    rootWithPendingPassiveEffects !== null &&
+    rootWithPendingPassiveEffects.tag === LegacyRoot &&
+    (executionContext & (RenderContext | CommitContext)) === NoContext
+  ) {
+    flushPassiveEffects();
+  }
+
+  const prevExecutionContext = executionContext;
+  // executionContext 指向 BatchedContext
+  executionContext |= BatchedContext;
+
+  const prevTransition = ReactCurrentBatchConfig.transition;
+  const previousPriority = getCurrentUpdatePriority();
+  try {
+    ReactCurrentBatchConfig.transition = 0;
+    setCurrentUpdatePriority(DiscreteEventPriority);
+    if (fn) {
+      return fn();
+    } else {
+      return undefined;
+    }
+  } finally {
+    // 如果 fn 执行 抛出了错误，则回退至之前的状态
+    setCurrentUpdatePriority(previousPriority);
+    ReactCurrentBatchConfig.transition = prevTransition;
+    executionContext = prevExecutionContext;
+    // Flush the immediate callbacks that were scheduled during this batch.
+    // Note that this will happen even if batchedUpdates is higher up
+    // the stack.
+    // flush 本次 batch 中高优先级的 callbacks
+    if ((executionContext & (RenderContext | CommitContext)) === NoContext) {
+      flushSyncCallbacks();
+    }
+  }
+}
+```
+
+- flushSync 使用了 ts 的函数重载，如果传入回调，会执行这个回调。
+- 从整体来看，flushSync 主要调用了 flushPassiveEffects 函数来处理已经 commit 的 HostRoot 上的待执行的副作用。
+- flushSync 会先对已经 commit 的内容执行 flushPassiveEffects，执行完毕后才进入 BatchedContext 阶段。
+- 注意，在首次渲染时 rootWithPendingPassiveEffects 应该为 null，也就是说 flushPassiveEffects 不会被执行到，但是我们仍然来分析下 flushPassiveEffects 会做些什么事情。
+
+### flushPassiveEffects
+
+```ts
+// src/react/packages/react-reconciler/src/ReactFiberWorkLoop.new.js
+export function flushPassiveEffects(): boolean {
+  // Returns whether passive effects were flushed.
+  // TODO: Combine this check with the one in flushPassiveEFfectsImpl. We should
+  // probably just combine the two functions. I believe they were only separate
+  // in the first place because we used to wrap it with
+  // `Scheduler.runWithPriority`, which accepts a function. But now we track the
+  // priority within React itself, so we can mutate the variable directly.
+  if (rootWithPendingPassiveEffects !== null) {
+    // Cache the root since rootWithPendingPassiveEffects is cleared in
+    // flushPassiveEffectsImpl
+    // 这里缓存 root 是为了在发生错误回滚时即时释放缓存池
+    const root = rootWithPendingPassiveEffects;
+    // Cache and clear the remaining lanes flag; it must be reset since this
+    // method can be called from various places, not always from commitRoot
+    // where the remaining lanes are known
+    // 重置 remainingLanes
+    const remainingLanes = pendingPassiveEffectsRemainingLanes;
+    pendingPassiveEffectsRemainingLanes = NoLanes;
+
+    const renderPriority = lanesToEventPriority(pendingPassiveEffectsLanes);
+    const priority = lowerEventPriority(DefaultEventPriority, renderPriority);
+    const prevTransition = ReactCurrentBatchConfig.transition;
+    const previousPriority = getCurrentUpdatePriority();
+    try {
+      ReactCurrentBatchConfig.transition = 0;
+      setCurrentUpdatePriority(priority);
+      return flushPassiveEffectsImpl();
+    } finally {
+      // flushPassiveEffectsImpl 发生错误后回滚只上一状态
+      setCurrentUpdatePriority(previousPriority);
+      ReactCurrentBatchConfig.transition = prevTransition;
+
+      // Once passive effects have run for the tree - giving components a
+      // chance to retain cache instances they use - release the pooled
+      // cache at the root (if there is one)
+      releaseRootPooledCache(root, remainingLanes);
+    }
+  }
+  return false;
+}
+```
+
+这个函数主要调用 flushPassiveEffectsImpl 函数。
+
+```ts
+function flushPassiveEffectsImpl() {
+  if (rootWithPendingPassiveEffects === null) {
+    return false;
+  }
+
+  const root = rootWithPendingPassiveEffects;
+  const lanes = pendingPassiveEffectsLanes;
+  // 由于这里的 PassiveEffects 将会被 flush，这里将之清空
+  rootWithPendingPassiveEffects = null;
+  // TODO: This is sometimes out of sync with rootWithPendingPassiveEffects.
+  // Figure out why and fix it. It's not causing any known issues (probably
+  // because it's only used for profiling), but it's a refactor hazard.
+  pendingPassiveEffectsLanes = NoLanes;
+
+  // Render 阶段和 Commit 阶段是不能 flush 的
+  if ((executionContext & (RenderContext | CommitContext)) !== NoContext) {
+    throw new Error('Cannot flush passive effects while already rendering.');
+  }
+
+  const prevExecutionContext = executionContext;
+  // 将 executionContext 更新为 CommitContext，因为现在进入了 Commit 阶段
+  executionContext |= CommitContext;
+
+  // 这里将 passiveEffects 分成了 Mount 和 Unmount 阶段，这两类都需要 commit，但是处理的逻辑不同
+  commitPassiveUnmountEffects(root.current);
+  commitPassiveMountEffects(root, root.current);
+
+  executionContext = prevExecutionContext;
+
+  // 所有的同步的 callback 都需要 flush
+  flushSyncCallbacks();
+
+  // If additional passive effects were scheduled, increment a counter. If this
+  // exceeds the limit, we'll fire a warning.
+  // nestedPassiveUpdateCount 计数器递增，防止造成死循环
+  nestedPassiveUpdateCount =
+    rootWithPendingPassiveEffects === null ? 0 : nestedPassiveUpdateCount + 1;
+  return true;
+}
+```
+
+- flush effects 的目的是 commit effects。
+
+### flushSyncCallbacks
+
+```ts
+// src/react/packages/react-reconciler/src/ReactFiberSyncTaskQueue.new.js
+export function flushSyncCallbacks() {
+  // isFlushingSyncQueue 是 syncQueue 的互斥锁 
+  if (!isFlushingSyncQueue && syncQueue !== null) {
+    // Prevent re-entrance.
+    isFlushingSyncQueue = true;
+    let i = 0;
+    const previousUpdatePriority = getCurrentUpdatePriority();
+    try {
+      const isSync = true;
+      const queue = syncQueue;
+      // TODO: Is this necessary anymore? The only user code that runs in this
+      // queue is in the render or commit phases.
+      setCurrentUpdatePriority(DiscreteEventPriority);
+      // flush syncQueue，每个 callback 可以返回一个新的 callback
+      for (; i < queue.length; i++) {
+        let callback = queue[i];
+        do {
+          callback = callback(isSync);
+        } while (callback !== null);
+      }
+      // 重置 syncQueue
+      syncQueue = null;
+      includesLegacySyncCallbacks = false;
+    } catch (error) {
+      // If something throws, leave the remaining callbacks on the queue.
+      // 如果syncQueue 中每个 RootCallback 发生了错误，则跳过此项
+      if (syncQueue !== null) {
+        syncQueue = syncQueue.slice(i + 1);
+      }
+      // Resume flushing in the next tick
+      // 调度在下一个 tick 中继续执行
+      scheduleCallback(ImmediatePriority, flushSyncCallbacks);
+      throw error;
+    } finally {
+      setCurrentUpdatePriority(previousUpdatePriority);
+      isFlushingSyncQueue = false;
+    }
+  }
+  return null;
+}
+
+```
+
+可以看到，flushSyncCallbacks 主要是在执行完 syncQueue 中的所有的回调，syncQueue 中的 callback 可以返回一个新的 callback，这种结构类似于数组+链表和结构，很是巧妙。这段代码中 syncQueue 的数据结构、flush syncQueue 的处理方式和错误处理方式，值得我们借鉴。这种消费 effect 的方式和 react 中响应式 effect 的消费很像。
+
+- 因为 syncQueue 是公共资源，而 flushSyncCallbacks 是其消费者，因此消费者在消费 syncQueue 时需要添加互斥锁，以免造成资源争夺。
+- 出现错误时并不是直接继续执行，而是放到了 next tick 中继续消费，提高了 syncQueue 消费的效率。
+
+## updateContainer
+
+updateContainer 是首次渲染中重要工作中的一项。
+
+```ts
+export function updateContainer(
+  element: ReactNodeList,
+  container: OpaqueRoot,
+  parentComponent: ?React$Component<any, any>,
+  callback: ?Function,
+): Lane {
+  // 获取 RootFiber
+  const current = container.current;
+  const eventTime = requestEventTime();
+  const lane = requestUpdateLane(current);
+
+  // 更新 container 的 context 信息
+  const context = getContextForSubtree(parentComponent);
+  if (container.context === null) {
+    container.context = context;
+  } else {
+    container.pendingContext = context;
+  }
+
+  // 创建一个更新
+  const update = createUpdate(eventTime, lane);
+  // Caution: React DevTools currently depends on this property
+  // being called "element".
+  update.payload = {element};
+
+  callback = callback === undefined ? null : callback;
+  if (callback !== null) {
+    update.callback = callback;
+  }
+
+  // 将新建的更新入栈
+  enqueueUpdate(current, update, lane);
+  // 请求一次调度更新
+  const root = scheduleUpdateOnFiber(current, lane, eventTime);
+  if (root !== null) {
+    entangleTransitions(root, current, lane);
+  }
+
+  return lane;
+}
+```
+
+updateContainer 函数中主要是针对 RootFiber 创建了一次更新，加入到更新队列，并且请求调度器进行调度。调度更新部分，请参照 [scheduleWork与调度过程
+](/react/reconciliation/scheduleWork.html)。
+
+## 小结
+
+通过上面的分析过程可知，React 的首次渲染的流程如下：首先执行一系列的初始化工作，包括创建 HostRoot 和 FiberRoot 以及建立两者之间的关联、初始化事件委托系统，然后创建一个同步的更新并向调度器提交调度请求。
+
+<!-- TODO MORE -->
+
+## Q&A
+
+### executionContext 有哪几种？
+
+executionContext 表示 React 当前执行的上下文阶段，通过 executionContext 我们可以大致分出其总体渲染流程的不同阶段。
+
+```ts
+// src/react/packages/react-reconciler/src/ReactFiberWorkLoop.new.js
+export const NoContext = /*             */ 0b0000;
+const BatchedContext = /*               */ 0b0001; // Batch(批处理)阶段
+const RenderContext = /*                */ 0b0010; // Render(渲染)阶段
+const CommitContext = /*                */ 0b0100; // Commit(提交)阶段
+export const RetryAfterError = /*       */ 0b1000; // 错误重试阶段
+
+// Describes where we are in the React execution stack
+let executionContext: ExecutionContext = NoContext;
+```
+
+全局变量 executionContext 代表当前的执行上下文, 初始化为 NoContent。下面是这四个阶段的对照表格:
+
+| context         | 所在函数                                   | 阶段              | 备注                                             |
+| --------------- | ------------------------------------------ | ----------------- | ------------------------------------------------ |
+| NoContext       |                                            | 初始化            | 初始阶段                                         |
+| BatchedContext  | flushSync、batchedUpdates、flushControlled | Batch(批处理)阶段 | RenderSubtreeIntoContainer 之后，renderRoot 之前 |
+| RenderContext   | renderRootSync、renderRootConcurrent       | Render(渲染)阶段  | renderRoot之后，commitRoot 之前                  |
+| CommitContext   | commitRootImpl、flushPassiveEffectsImpl    | Commit(提交)阶段  | commitRoot 之后                                  |
+| RetryAfterError | recoverFromConcurrentError                 | Error 阶段        | 发生错误需要恢复之后                             |
+
+从表格可以总结出，React 的渲染总共分为 NoContext、BatchedContext、RenderContext、CommitContext、RetryAfterError 五个阶段。
+
+### 使用位运算提高枚举计算效率
+
+React 中多处使用位运算进行枚举计算，使用位运算可以有效提交运行效率，尤其是大型的状态繁多的项目。在react源码中有很多类似的位运算，比如effectTag，workTag和上文中的executionContext。
+
+下面我们来看看 React 中位运算枚举风格：
+
+```ts
+const NoContext = 0b0000;
+const BatchedContext =  0b0001; 
+const RenderContext =  0b0010; 
+const CommitContext =  0b0100;
+const RetryAfterError = 0b1000;
+
+let executionContext = NoContext;
+
+// 如果现在开始 RenderContainer，进入 Batch 阶段
+// 增加枚举值
+executionContext |= BatchedContext; // 1
+// 判断是否在 Batch 阶段
+// 消费枚举值：0 表示没有枚举值，1 表示有枚举值。这里我们直接跟为 0 的 NoContext 作比较。
+(executionContext & BatchedContext) !== NoContext; // true
+// 判断是否处于 Render 阶段
+(executionContext & RenderContext) !== NoContext; // false
+// 现在开始 RenderRoot，进入 Render 阶段
+executionContext |= RenderContext;
+// 判断是否处于 Batch 阶段或者 Render 阶段
+(executionContext & (BatchedContext | RenderContext)) !== NoContext; // true
+// 判断是否不处于 Commit 阶段或者 Error 阶段
+(executionContext & (CommitContext | RetryAfterError)) === NoContext; // true
+```
+
+下面我们再来对比一些 Vue 源码中使用位运算的风格。
+
+```ts
+const enum ShapeFlags {
+  ELEMENT = 1,
+  FUNCTIONAL_COMPONENT = 1 << 1,
+  STATEFUL_COMPONENT = 1 << 2,
+  TEXT_CHILDREN = 1 << 3,
+  ARRAY_CHILDREN = 1 << 4,
+  SLOTS_CHILDREN = 1 << 5,
+  TELEPORT = 1 << 6,
+  SUSPENSE = 1 << 7,
+  COMPONENT_SHOULD_KEEP_ALIVE = 1 << 8,
+  COMPONENT_KEPT_ALIVE = 1 << 9,
+  COMPONENT = ShapeFlags.STATEFUL_COMPONENT | ShapeFlags.FUNCTIONAL_COMPONENT
+}
+```
+
+写法不一样，使用的方法是一样的。
+
+这种原理是什么？这是因为这些枚举数字是互相正交的（可以从数学上垂直的概念来理解），也可以从二进制为进行理解，没加入一个枚举值，在相应的下标出置为 1（按位或运算），判断是否有这个枚举值的时候，就可以那要判断的值与枚举值对齐比对（按位与运算）。
+
+位运算的更多技巧请参考文章：[位运算初探](/react/summary/bitOperation)
+
 ## 参考资料
 
 - [深入理解React源码 - 首次渲染](https://zhuanlan.zhihu.com/p/32520194)
 - [深入剖析 React Concurrent](https://zhuanlan.zhihu.com/p/60307571)
+- [React的第一次渲染过程浅析](https://segmentfault.com/a/1190000020532672)
