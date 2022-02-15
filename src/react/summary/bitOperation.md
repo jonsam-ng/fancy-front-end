@@ -1,5 +1,7 @@
 # 位运算初探
 
+<Badges :content="[{type: 'tip', text: 'React17'}]" />
+
 <TimeToRead />
 
 ## 目录

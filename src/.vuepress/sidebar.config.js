@@ -33,6 +33,7 @@ const sidebar = {
       sidebarDepth: 2,
       children: [
         `${reactPath}/basic/chapter`,
+        `${reactPath}/basic/faq`,
         `${reactPath}/basic/ReactElement`,
         `${reactPath}/basic/ReactChildren`,
       ],
@@ -100,6 +101,7 @@ const sidebar = {
       children: [
         `${reactPath}/summary/bitOperation`,
         `${reactPath}/summary/first-render`,
+        `${reactPath}/summary/10-min-react`,
       ],
     },
   ],

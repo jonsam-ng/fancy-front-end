@@ -1334,7 +1334,7 @@ let executionContext: ExecutionContext = NoContext;
 | CommitContext   | commitRootImpl、flushPassiveEffectsImpl    | Commit(提交)阶段  | commitRoot 之后                                  |
 | RetryAfterError | recoverFromConcurrentError                 | Error 阶段        | 发生错误需要恢复之后                             |
 
-从表格可以总结出，React 的渲染总共分为 NoContext、BatchedContext、RenderContext、CommitContext、RetryAfterError 五个阶段。
+从表格可以总结出，React 的渲染总共分为 NoContext、BatchedContext、RenderContext、CommitContext、RetryAfterError 五个阶段。关于更新阶段的更多内容，请移步 [React 更新周期](/react/update/)。
 
 ### 使用位运算提高枚举计算效率
 
