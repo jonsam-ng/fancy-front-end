@@ -308,10 +308,6 @@ const nav = [
         text: "算法",
         link: `${algorithmPath}/`,
       },
-      {
-        text: "设计模式",
-        link: "http://docs.jonsam.site/project-5/",
-      },
     ],
   },
   {
