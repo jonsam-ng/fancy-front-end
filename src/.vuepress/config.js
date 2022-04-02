@@ -57,6 +57,8 @@ module.exports = {
       "/vite/": sidebar.vite,
       "/am-editor": sidebar.amEditor,
       "/typescript-utility": sidebar.typescriptUtility,
+      "/jquery": sidebar.JQuery,
+      "/qiankun": sidebar.qianKun,
     },
   },
 
@@ -76,5 +78,11 @@ module.exports = {
   },
   markdown: {
     lineNumbers: true,
+  },
+  configureWebpack: {
+    node: {
+      global: true,
+      process: true,
+    },
   },
 };

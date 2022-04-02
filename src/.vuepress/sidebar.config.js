@@ -1,3 +1,6 @@
+/*****************************************************************************************
+ *                                 文档集路径配置
+ ******************************************************************************************/
 // React 文档目录
 const reactPath = "/react";
 // Vue3 文档目录
@@ -16,9 +19,15 @@ const amEditorPath = "/am-editor";
 const typescriptUtilityPath = "/typescript-utility";
 // JQuery 目录
 const jQueryPath = "/jquery";
+// qiankun 目录
+const qiankunPath = "/qiankun";
+
+/*****************************************************************************************
+ *                                 侧边栏配置
+ ******************************************************************************************/
 
 const sidebar = {
-  // React 源码分析
+  // ========== React ========== //
   react: [
     {
       title: "开始上手",
@@ -102,9 +111,11 @@ const sidebar = {
         `${reactPath}/summary/bitOperation`,
         `${reactPath}/summary/first-render`,
         `${reactPath}/summary/10-min-react`,
+        `${reactPath}/summary/react-reconciliation-1`,
       ],
     },
   ],
+  // ========== vue3 ========== //
   vue3: [
     {
       title: "开始上手",
@@ -147,6 +158,7 @@ const sidebar = {
       children: [],
     },
   ],
+  // ========== 算法 ========== //
   algorithm: [
     {
       title: "开始上手",
@@ -155,6 +167,7 @@ const sidebar = {
       sidebarDepth: 1,
     },
   ],
+  // ========== 数据结构 ========== //
   dataStructure: [
     {
       title: "开始上手",
@@ -170,6 +183,7 @@ const sidebar = {
       children: [`${dataStructurePath}/linked-list/single`],
     },
   ],
+  // ========== Vite ========== //
   vite: [
     {
       title: "开始上手",
@@ -192,6 +206,7 @@ const sidebar = {
       children: [`${vitePath}/vite/cli`, `${vitePath}/vite/server`],
     },
   ],
+  // ========== amEditor 富文本编辑器 ========== //
   amEditor: [
     {
       title: "开始上手",
@@ -213,6 +228,7 @@ const sidebar = {
       ],
     },
   ],
+  // ========== TypeScript ========== //
   typescriptUtility: [
     {
       title: "开始上手",
@@ -243,11 +259,51 @@ const sidebar = {
       ],
     },
   ],
+  // ========== JQuery ========== //
+  JQuery: [
+    {
+      title: "开始上手",
+      collapsable: true,
+      path: `${jQueryPath}/`,
+      sidebarDepth: 1,
+    },
+    {
+      title: "JQuery 源码分析",
+      collapsable: false,
+      path: `${jQueryPath}/jq-book`,
+      sidebarDepth: 2,
+    },
+    {
+      title: "JQuery 源码注释",
+      path: `${jQueryPath}/jq-source`,
+    },
+  ],
+  // ========== qianKun 微前端框架 ========== //
+  qianKun: [
+    {
+      title: "开始上手",
+      collapsable: true,
+      path: `${qiankunPath}/`,
+      sidebarDepth: 1,
+    },
+    {
+      title: "Core",
+      collapsable: false,
+      path: `${qiankunPath}/core/`,
+      sidebarDepth: 2,
+      children: [
+        `${qiankunPath}/core/apis`,
+        `${qiankunPath}/core/loader`,
+        `${qiankunPath}/core/effects`,
+      ],
+    },
+  ],
 };
 
-// 顶部导航配置
+/*****************************************************************************************
+ *                                 顶部导航配置
+ ******************************************************************************************/
 const nav = [
-  // React 源码
   {
     text: "React源码",
     ariaLabel: "React 源码菜单",
@@ -365,6 +421,10 @@ const nav = [
       {
         text: "JQuery 源码",
         link: `${jQueryPath}/`,
+      },
+      {
+        text: "qiankun 源码",
+        link: `${qiankunPath}/`,
       },
     ],
   },
