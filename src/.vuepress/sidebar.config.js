@@ -269,13 +269,15 @@ const sidebar = {
     },
     {
       title: "JQuery 源码分析",
-      collapsable: false,
       path: `${jQueryPath}/jq-book`,
-      sidebarDepth: 2,
     },
     {
       title: "JQuery 源码注释",
       path: `${jQueryPath}/jq-source`,
+    },
+    {
+      title: "JQuery 源码扩展",
+      path: `${jQueryPath}/extend`,
     },
   ],
   // ========== qianKun 微前端框架 ========== //
@@ -295,6 +297,17 @@ const sidebar = {
         `${qiankunPath}/core/apis`,
         `${qiankunPath}/core/loader`,
         `${qiankunPath}/core/effects`,
+      ],
+    },
+    {
+      title: "Sandbox",
+      collapsable: false,
+      path: `${qiankunPath}/sandbox/`,
+      sidebarDepth: 2,
+      children: [
+        `${qiankunPath}/sandbox/sandbox`,
+        `${qiankunPath}/sandbox/proxySandbox`,
+        `${qiankunPath}/sandbox/snapshotSandbox`,
       ],
     },
   ],
