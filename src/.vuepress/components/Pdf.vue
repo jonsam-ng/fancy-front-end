@@ -1,11 +1,9 @@
 <template>
   <div class="pdf-wrapper">
     <div class="app-header">
-      <template v-if="isLoading">
-        努力加载中...
-      </template>
+      <div v-if="isLoading">努力加载中...</div>
 
-      <template v-else>
+      <div v-else>
         <span v-if="showAllPages">共 {{ pageCount }} 页</span>
 
         <span v-else>
@@ -105,7 +103,7 @@
             </span>
           </button>
         </div>
-      </template>
+      </div>
     </div>
 
     <div class="app-content">
