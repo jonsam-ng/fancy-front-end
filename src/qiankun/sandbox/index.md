@@ -8,6 +8,26 @@
 
 [[TOC]]
 
+## 沙箱
+
+在微服务中，主要要解决两个沙箱问题，分别是 CSS 沙箱和 JS 沙箱。对于 JS 沙箱而言，主要也要解决两个问题，一个是沙箱的隔离作用，二是沙箱间、沙箱与基座应用间的通信机制。在沙箱这一部分，我们主要解析 CSS 沙箱的实现原理和 JS 沙箱的实现原理。
+
+### CSS 沙箱
+
+实现 CSS 沙箱主要有以下几种方案：
+
+- BEM CSS。给 CSS class 添加约定的类进行区分。
+- Module CSS。模块化的 CSS 能够让 CSS 在一定的 scope 以内生效。
+- CSS In JS。CSS-in-JS的实现方法上区分大体分为两种：唯一CSS选择器和内联样式（Unique Selector VS Inline Styles）。这两种方法都可以达到隔离 CSS 的作用。参考：[阮一峰：CSS in JS 简介](https://www.ruanyifeng.com/blog/2017/04/css_in_js.html)
+- ShadowDOM
+- namespace：每个业务模块或者团队使用不同的样式前缀。
+- Dynamic StyleSheet：动态的注入或者删除样式表。
+
+### JS 沙箱
+
+- 代理沙箱（ProxySandbox）
+- 快照沙箱（SnapshotSandbox）
+
 ## Shadow DOM
 
 > Method of establishing and maintaining functional boundaries between DOM trees and how these trees interact with each other within a document, thus enabling better functional encapsulation within the DOM & CSS.
@@ -45,3 +65,14 @@ Shadow DOM 不支持 IE 浏览器，查看[支持情况](https://caniuse.com/?se
 ```js
 Object.defineProperty(obj, prop, descriptor)
 ```
+
+## Window.top/parent/self/window
+
+- [Window.top](https://developer.mozilla.org/en-US/docs/Web/API/Window/top): Returns a reference to the topmost window in the window hierarchy. This property is read only.
+- [Window.parent](https://developer.mozilla.org/en-US/docs/Web/API/Window/parent)
+- [Window.self](https://developer.mozilla.org/en-US/docs/Web/API/Window/self): Returns an object reference to the window object itself.
+- [Window.window](https://developer.mozilla.org/en-US/docs/Web/API/Window/window): Returns a reference to the current window.
+
+参考：
+
+- [MDN：Window](https://developer.mozilla.org/en-US/docs/Web/API/Window)

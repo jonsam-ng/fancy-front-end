@@ -39,6 +39,7 @@ export async function loadApp<T extends ObjectType>(
   // template： Processed HTML template.
   // execScripts：(sandbox?: object, strictGlobal?: boolean, execScriptsHooks?: ExecScriptsHooks): Promise<unknown> - the return value is the last property on window or proxy window which set by the entry script.
   // assetPublicPath：Public path for assets.
+  // see https://github.com/kuitos/import-html-entry#execscriptsentry-scripts-proxy-opts
   const { template, execScripts, assetPublicPath } = await importEntry(entry, importEntryOpts);
 
   // as single-spa load and bootstrap new app parallel with other apps unmounting
@@ -123,12 +124,14 @@ export async function loadApp<T extends ObjectType>(
   // get the lifecycle hooks from module exports
   // 执行模板中的 js 文件，执行 js 的沙箱为 global，如果使用 lose 模式的沙箱就不使用严格的 js 沙箱。
   // scriptExports 为执行 js 之后的结果，微应用中的 js 通常打包为 umd
+  // 如果代码首次执行提供了沙箱，之后代码在运行时中都会在沙箱中运行
   const scriptExports: any = await execScripts(global, sandbox && !useLooseSandbox);
   // 从微应用中获取到相关的钩子函数
   const { bootstrap, mount, unmount, update } = getLifecyclesFromExports(
     scriptExports,
     appName,
     global,
+    // 之所以要使用 沙箱上的latestSetProp，是因为 execScripts 可能会在得到入口脚本的执行过程中将结果设置到 global 上，如果是代理沙箱，这个行为可以被记录下来，存放到 instance?.latestSetProp 上。参考 UMD 模块化。
     sandboxContainer?.instance?.latestSetProp,
   );
   // 工厂方法：创建当前微应用的全局状态依赖管理工具函数，所有微应用的全局依赖存放在 globalState 文件中的 deps 中。

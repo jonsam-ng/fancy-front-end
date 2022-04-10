@@ -1,4 +1,4 @@
-const { sidebar, nav } = require("./sidebar.config");
+const { nav, registeredSidebars } = require("./sidebar.config");
 const { description } = require("../../package");
 // root：custom github domain and donot need base.
 const base = "/fe-source-reading/";
@@ -21,7 +21,7 @@ module.exports = {
    */
   head: [
     ["link", { rel: "manifest", href: "/manifest.json" }],
-    // ["link", { rel: "icon", href: "/logo.png" }],
+    ["link", { rel: "icon", href: "/logo.png" }],
     ["meta", { name: "theme-color", content: "#3eaf7c" }],
     ["meta", { name: "apple-mobile-web-app-capable", content: "yes" }],
     [
@@ -48,18 +48,7 @@ module.exports = {
     smoothScroll: true,
     nav,
     sidebarDepth: 2,
-    sidebar: {
-      collapsable: false,
-      "/react/": sidebar.react,
-      "/vue3/": sidebar.vue3,
-      "/algorithm/": sidebar.algorithm,
-      "/data-structure/": sidebar.dataStructure,
-      "/vite/": sidebar.vite,
-      "/am-editor": sidebar.amEditor,
-      "/typescript-utility": sidebar.typescriptUtility,
-      "/jquery": sidebar.JQuery,
-      "/qiankun": sidebar.qianKun,
-    },
+    sidebar: registeredSidebars,
   },
 
   /**

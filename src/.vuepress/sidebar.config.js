@@ -21,6 +21,22 @@ const typescriptUtilityPath = "/typescript-utility";
 const jQueryPath = "/jquery";
 // qiankun 目录
 const qiankunPath = "/qiankun";
+// snabbdom 目录
+const snabbdomPath = "/snabbdom";
+// antd vue 目录
+const antdVuePath = "/antd-vue";
+// hls 目录
+const hlsPath = "/hls";
+// create react app 目录
+const craPath = "cra";
+// solid 目录
+const solidPath = "solid";
+// svelte 目录
+const sveltePath = "svelte";
+// axios 目录
+const axiosPath = "axios";
+// express 目录
+const expressPath = "express";
 
 /*****************************************************************************************
  *                                 侧边栏配置
@@ -111,7 +127,17 @@ const sidebar = {
         `${reactPath}/summary/bitOperation`,
         `${reactPath}/summary/first-render`,
         `${reactPath}/summary/10-min-react`,
-        `${reactPath}/summary/react-reconciliation-1`,
+      ],
+    },
+    {
+      title: "React 源码漂流记",
+      collapsable: false,
+      path: `${reactPath}/tour/`,
+      sidebarDepth: 1,
+      children: [
+        `${reactPath}/tour/react-basic-element`,
+        `${reactPath}/tour/react-reconciliation-1`,
+        `${reactPath}/tour/react-reconciliation-2`,
       ],
     },
   ],
@@ -310,7 +336,52 @@ const sidebar = {
         `${qiankunPath}/sandbox/snapshotSandbox`,
       ],
     },
+    {
+      title: "import-html-entry",
+      collapsable: true,
+      path: `${qiankunPath}/import-html-entry`,
+      sidebarDepth: 1,
+    },
   ],
+  // ========== snabbdom ========== //
+  snabbdom: [
+    {
+      title: "开始上手",
+      collapsable: true,
+      path: `${snabbdomPath}/`,
+      sidebarDepth: 1,
+    },
+    {
+      title: "Core",
+      collapsable: false,
+      path: `${snabbdomPath}/core/`,
+      sidebarDepth: 2,
+      children: [
+        `${snabbdomPath}/core/init`,
+        `${snabbdomPath}/core/h`,
+        `${snabbdomPath}/core/vnode`,
+        `${snabbdomPath}/core/jsx`,
+        `${snabbdomPath}/core/thunk`,
+      ],
+    },
+  ],
+};
+
+/*****************************************************************************************
+ *                                 文档目录路径映射
+ ******************************************************************************************/
+const registeredSidebars = {
+  collapsable: false,
+  "/react/": sidebar.react,
+  "/vue3/": sidebar.vue3,
+  "/algorithm/": sidebar.algorithm,
+  "/data-structure/": sidebar.dataStructure,
+  "/vite/": sidebar.vite,
+  "/am-editor": sidebar.amEditor,
+  "/typescript-utility": sidebar.typescriptUtility,
+  "/jquery": sidebar.JQuery,
+  "/qiankun": sidebar.qianKun,
+  "/snabbdom": sidebar.snabbdom,
 };
 
 /*****************************************************************************************
@@ -348,6 +419,10 @@ const nav = [
       {
         text: "总结",
         link: `${reactPath}/summary/`,
+      },
+      {
+        text: "React 源码漂流记",
+        link: `${reactPath}/tour/`,
       },
     ],
   },
@@ -397,15 +472,15 @@ const nav = [
       },
       {
         text: "ant-design-vue源码",
-        link: `${webpackPath}/`,
+        link: `${antdVuePath}/`,
       },
       {
         text: "hls.js源码",
-        link: `${webpackPath}/`,
+        link: `${hlsPath}/`,
       },
       {
         text: "create-react-app源码",
-        link: `${webpackPath}/`,
+        link: `${craPath}/`,
       },
       {
         text: "vite源码",
@@ -413,19 +488,19 @@ const nav = [
       },
       {
         text: "solid.js源码",
-        link: `${webpackPath}/`,
+        link: `${solidPath}/`,
       },
       {
         text: "svelte源码",
-        link: `${webpackPath}/`,
+        link: `${sveltePath}/`,
       },
       {
         text: "axios源码",
-        link: `${webpackPath}/`,
+        link: `${axiosPath}/`,
       },
       {
         text: "express源码",
-        link: `${webpackPath}/basic/`,
+        link: `${expressPath}/`,
       },
       {
         text: "Typescript Utility",
@@ -439,6 +514,10 @@ const nav = [
         text: "qiankun 源码",
         link: `${qiankunPath}/`,
       },
+      {
+        text: "snabbdom 源码",
+        link: `${snabbdomPath}/`,
+      },
     ],
   },
   {
@@ -447,4 +526,4 @@ const nav = [
   },
 ];
 
-module.exports = { sidebar, nav };
+module.exports = { sidebar, nav, registeredSidebars };

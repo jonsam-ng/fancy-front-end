@@ -10,49 +10,6 @@
 
 ## 前言
 
-从今天开始，开启我们的 React 源码阅读之旅。阅读 React 的源码陆陆续续也有几个月之久，其间也有不少的收获和感悟，趁此机会，整理成文章，与大家分享和讨论，同时也可以给想要开始阅读源码的伙伴一些启发吧。
-
-开始今天的内容之前，我想先聊几个问题，因为这是 React 源码阅读系列的第一篇文章，我想先分享一下我对阅读源码的一下见解。
-
-### 为什么读 React 源码？
-
-可能有如下的场景让你开始关注 React 源码：
-
-1. React 的使用已经得心应手了，迫切的想知道这些每天使用的 API 到底是什么原理？比如每天都用到 useState，那么究竟 useState 是如何处理组件的状态的呢？
-2. 需求开发中遇到奇怪的问题，怎么都找不到原因，是否是我对 API 的理解和使用有偏差？
-3. 业务太复杂，我的组件遇到了性能瓶颈，能榨干性能的手段悉数用尽，关于性能问题，是否还有其他的灵感呢？
-4. 我想写大型组件库，能够达到 antd 那样强大的功能，我需要对 React 以及更多更底层的 API 有更多的理解。
-5. 我想写框架玩玩，能否参照下 React 框架的思路？……
-
-可能会遇到如下的问题，让你迫切的想要从 React 源码中找答案：
-
-1. 我的 setState 为什么没有更新组件的状态？为什么我的组件渲染了这么多次？这会不会很消耗性能？
-2. 为什么我需要给列表项设置 key 值，不设置 key 值会有什么问题？
-3. 为什么需要使用 useRef，为什么要使用 useMemo、useCallback 进行性能优化？这种优化是否是越多越好？
-4. 为什么 hook 只能在顶层使用，hook 为什么能够使业务逻辑得到复用？
-5. 为什么我的数据丢失了响应性，闭包问题又如何解决？……
-
-不管你是为什么开始关注到 React 的原理，不管你是否开启了阅读 React 源码的计划，关注这个系列的文章，我们可以一起学习、成长与进步。
-
-### 怎么读 React 源码？
-
-我有如下的方法推荐给你：
-
-1. 断点调试，搜索脉络。通过简单的案例，从源码中打断点，逐步深入探索。好的搜索技巧可能帮助你快速找到你需要查看的函数。
-2. 由表及里，笔记加强。从API 层，逐步向更深的实现逻辑追溯，直到形成知识的闭环。通过笔记记录自己的学习历程，不断更正和完善笔记内容。
-3. 问题驱动，寻找答案。从业务需求中遇到的问题触发，从源码中寻找答案，直到解决疑惑为止。
-
-阅读源码的建议：
-
-1. 先关注核心逻辑，然后在关注实现细节。React 中有很多 Dev 环境、插件的代码或者是兼容性考虑的代码，可能会对你的阅读产生影响，可以跳过这些逻辑，只关注核心骨架。
-2. 分层阅读。React 内部分成了很多模块，可以根据阅读进度分层阅读，直到最终能够将各个模块的内容联动起来。
-3. 关注注释。源码中有很多详细的注释，关注注释可以给你更深的理解。
-
-### 我们能从 React 源码中学习到什么？
-
-- 对框架更深入的理解和掌握。
-- 框架设计的思想和模式。
-- js 的高级应用。
 
 -----
 
@@ -137,7 +94,7 @@ export function scheduleUpdateOnFiber(
 
   // 标记 root 即将更新，root.pendingLanes |= lane
   markRootUpdated(root, lane, eventTime);
-  // 如果当前已经是 Render 阶段，且 root 是待处理的 HostRoot，这时跳过渲染的调度请求，并且追踪 lane，加入到 Render 阶段的 lanes，就在在当前调度的回调中参与渲染，或者等待下次渲染。
+  // 如果当前已经是 Render 阶段，且 root 是待处理的 FiberRoot，这时跳过渲染的调度请求，并且追踪 lane，加入到 Render 阶段的 lanes，就在在当前调度的回调中参与渲染，或者等待下次渲染。
   if (
     (executionContext & RenderContext) !== NoLanes &&
     root === workInProgressRoot
@@ -148,7 +105,7 @@ export function scheduleUpdateOnFiber(
       lane,
     );
   } else {
-    // 确保 HostRoot 发起调度请求
+    // 确保 FiberRoot 发起调度请求
     ensureRootIsScheduled(root, eventTime);
   }
   return root;
@@ -157,18 +114,18 @@ export function scheduleUpdateOnFiber(
 
 关注入参的伙伴可能已经发现，这里传入的是 fiber，返回的和传递给 ensureRootIsScheduled 函数的却是 root。root 是 FiberRoot，并不是 Fiber。可以把 FiberRoot 理解为 FiberTree 的容器。FiberRoot 与 RootFiber 双向索引。之后会详细展开。
 
-markUpdateLaneFromFiberToRoot 向上收集优先级的同时寻找到了 HostRoot 容器，因为渲染任务的调度是依托于容器的，而非 RootFiber。这个过程更像是一个抽丝剥茧的过程，root 才是被调度的目标。
+markUpdateLaneFromFiberToRoot 向上收集优先级的同时寻找到了 FiberRoot 容器，因为渲染任务的调度是依托于容器的，而非 RootFiber。这个过程更像是一个抽丝剥茧的过程，root 才是被调度的目标。
 
 这个函数的核心功能如下：
 
-- 从 fiber 向父级收集 lanes，并且计算出 HostRoot。
-- 调用 ensureRootIsScheduled，确保 HostRoot 发起同步或者异步调度。
+- 从 fiber 向父级收集 lanes，并且计算出 FiberRoot。
+- 调用 ensureRootIsScheduled，确保 FiberRoot 发起同步或者异步调度。
 
 ## ensureRootIsScheduled：一花开两叶，结果自然成
 
 > ensureRootIsScheduled 是封装调度任务的双线流水车间。
 
-在上面对 scheduleUpdateOnFiber 的分析中，最重要的就是调用 ensureRootIsScheduled，以保证在 fiber 所在的 HostRoot 上调度更新，那么 HostRoot 上是如何继续调度的呢？继续来看代码。
+在上面对 scheduleUpdateOnFiber 的分析中，最重要的就是调用 ensureRootIsScheduled，以保证在 fiber 所在的 FiberRoot 上调度更新，那么 FiberRoot 上是如何继续调度的呢？继续来看代码。
 
 ```js
 // src/react/packages/react-reconciler/src/ReactFiberWorkLoop.new.js
@@ -252,7 +209,7 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
 }
 ```
 
-ensureRootIsScheduled 将 HostRoot 上的调度任务区分为同步任务和异步任务。
+ensureRootIsScheduled 将 FiberRoot 上的调度任务区分为同步任务和异步任务。
 
 这个函数有以下几个核心作用：
 
@@ -261,6 +218,101 @@ ensureRootIsScheduled 将 HostRoot 上的调度任务区分为同步任务和异
 - 异步更新调度：根据 nextLanes 计算事件优先级，并且转化为调度优先级，以相应的调度优先级向调度器发起异步回调，回调时执行 performConcurrentWorkOnRoot。
 - 注意同步调度中调用了 scheduleSyncCallback、scheduleCallback 两个函数不可混淆，scheduleCallback 是 Scheduler 提供的一种基于优先级机制的任务（回调）调度手段，performSyncWorkOnRoot 和 performConcurrentWorkOnRoot 才是真正要通过调度执行的任务。同步的任务通过同步回调队列的方式进行了优化处理。scheduleSyncCallback 是将同步的任务加入同步任务队列。调度器不是不可缺少的，如果浏览器支持微任务，同步任务的处理就可以交给微任务处理，而不经过调度器。
 
-## scheduleSyncCallback 和 scheduleCallback
+## 扩展
+
+### 怎么理解 updateContainer 是“引擎“这件事？
+
+我们可以从 updateContainer 的调用来源来展开下。
+
+调用 updateContainer 的函数包括： legacyRenderSubtreeIntoContainer、ReactDOMRoot.prototype.render、ReactDOMRoot.prototype.unmount、hydrateRoot、scheduleRoot。ReactDOMRoot 是由 ReactDOM.createRoot 创建的。
+
+```txt
+// 应用层 API
+legacyRenderSubtreeIntoContainer <- ReactDOM.hydrate
+                                 <- ReactDOM.render
+                                 <- ReactDOM.unmountComponentAtNode
+```
+
+由上面对函数调用链的分析可以看出，updateContainer 主要来源于应用层 API 的调用，加上 updateContainer 跟 scheduleUpdateOnFiber 的关系，可以看出 updateContainer 确实是针对 container 这个容器上的调度更新的入口而存在的，而这个 container，就是 FiberRoot。
+
+### scheduleMicrotask 与 queueMicrotask
+
+上文我们已经了解到支持微任务的浏览器会使用微任务的形式消费完（flush）同步任务队列，那么这个微任务是什么呢？下面来展开一下 scheduleMicrotask 的代码：
+
+```js
+const localPromise = typeof Promise === 'function' ? Promise : undefined;
+export const scheduleTimeout: any =
+  typeof setTimeout === 'function' ? setTimeout : (undefined: any);
+
+export const scheduleMicrotask: any =
+  typeof queueMicrotask === 'function'
+    ? queueMicrotask
+    : typeof localPromise !== 'undefined'
+    ? callback =>
+        localPromise
+          .resolve(null)
+          .then(callback)
+          .catch(handleErrorInNextTick)
+    : scheduleTimeout;
+
+function handleErrorInNextTick(error) {
+  // 非阻塞式抛出异常
+  setTimeout(() => {
+    throw error;
+  });
+}
+```
+
+什么是 queueMicrotask？
+
+> queueMicrotask adds the function (task) into a queue and each function is executed one by one (FIFO) after the current task has completed its work and when there is no other code waiting to be run before control of the execution context is returned to the browser's event loop.【来自MDN】
+
+微任务使用 queueMicrotask，同时 queueMicrotask 可以由 Promise 来模拟，或者使用 setTimeout 优雅替代。
+
+## 问题
+
+### 位运算怎么理解？
+
+关于 react 中常见的位运算，在之后的文章中会单独详解。本文主要用到 `|` 运算，按位或运算的规则是：两个位都为0时，结果才为0。在这里举出一个例子，方便大家对文章的 `|=` 进行理解：
+
+```js
+const NoContext = 0b0000;
+const BatchedContext =  0b0001; 
+const RenderContext =  0b0010;
+
+let executionContext = NoContext;
+
+// 如果现在开始 RenderContainer，进入 Batch 阶段
+// 增加枚举值
+executionContext |= BatchedContext; // 1
+
+// 判断是否在 Batch 阶段
+// 消费枚举值：0 表示没有枚举值，1 表示有枚举值。这里我们直接跟为 0 的 NoContext 作比较。
+(executionContext & BatchedContext) !== NoContext; // true
+// 判断是否处于 Render 阶段
+(executionContext & RenderContext) !== NoContext; // false
+```
+
+### lanes 优先级怎么理解？
+
+React 中需要基于优先级的调度机制以区分不同渲染任务的轻重缓急，在 v16 版本的 React 中还是使用 expirationTime 来管理优先级，在 v17 的版本中则采用了 lane 模型，相比于 expirationTime 模型，lane 模型有着更为细粒度、效率更高的特性。关于调度与优先级的内容，之后的文章会详述。
+
+### FiberRoot 和 RootFiber 什么关系？
+
+在本文中反复提到了 FiberRoot和 RootFiber（HostRoot），关于两者的区别如下：
+
+- FiberRoot 和 RootFiber 具有双向链接关系。FiberRoot.current = RootFiber，RootFiber.stateNode = FiberRoot。
+- FiberRoot 是 FiberTree 的容器，记录 FiberTree 在渲染过程中的数据。
+- RootFiber 本质上是 Fiber，是 FiberTree 的根节点，是特殊的 Fiber。
+- HostRoot 也就是 HostRootFiber，RootFiber 被标记为 HostRoot。
+
+在之后的文章中会详述 Fiber、RootFiber 和 FiberRoot、以及 FiberTree 的结构。
 
 ## 总结
+
+总结一些本文的内容：
+
+- 阅读 React 源码的原因、方法和意义。
+- updateContainer：初始化更新任务，调用 scheduleUpdateOnFiber 发出调度请求。
+- scheduleUpdateOnFiber：收集优先级，计算 FiberRoot。调用 ensureRootIsScheduled，确保 FiberRoot 发起同步或者异步调度。
+- ensureRootIsScheduled：包装同步更新任务和异步更新任务并采用不同的调度策略。同步更新任务入同步任务队列在微任务中执行，异步更新任务交给调度器进行调度与回调。
