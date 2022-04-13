@@ -1,4 +1,4 @@
-# React 源码漂流记：React Element 与基础概念
+# React 源码漂流记：ReactElement 与基础概念
 
 <Badges :content="[{type: 'tip', text: 'React17'}, {type: 'tip', text: '精简'}]" />
 
@@ -64,6 +64,25 @@
 - 源码：源码本身是最重要的，文章中列出的源码都是已经提炼处理的核心的代码，去除了 dev 环境、各种插件或者非核心的代码，防止对您阅读产生影响。
 - 篇幅：内容的篇幅不会很长，每篇文章会严格控制在 15 分钟阅读时间之内。如果您关注某些细节问题，可以参见【扩展】部分，这一部分会对本篇文章产生的若干细节问题进行扩展，当然如果您只关注骨干内容也可以跳过这一部分。
 - 内容：源码的解读难以逃脱个人理解的范围，所以如果有错误的地方、或者您有不同的见解、更多的问题，还请及时指正或者在评论区提出。当然也有一些问题，会在【问题】部分列出，作为对文章内容的消化。
+
+### 学习目标
+
+- 学习 React 的整体目录结构、API 概况、核心包的作用。
+- 学习 JSX、ReactElement、VDOM 等概念，了解 JSX 的解析原理。
+- 了解 React 选择 JSX 和 VDOM 的原因。
+
+## 源码结构
+
+熟悉 React 的小伙伴可能都知道，React 大致上可以分成调和器、调度器、渲染器几个部分。对应到 React 的源码里，最重要的就是有四个包，分别是 react、react-dom、scheduler、react-reconciler。克隆下源码，大概像是这样：
+
+<img :src="$withBase('/assets/img/react-packages.png')" alt="React 源码包结构" data-zoomable>
+
+上述几个包的核心作用：
+
+- react：导出 React 的核心 API，供外部应用使用。比如 Fragment、forwardRef、memo、hook全家桶等。
+- react-dom：React 基于 web 的渲染层，导出一些渲染相关的 API，比如说 render、createPortal、createRoot 等。
+- scheduler：React 中的调度器，负责任务队列的维护，基于优先级调度任务。
+- react-reconciler：React 中的调和器，负责 React 渲染的整体流程，包括 FiberTree 的调和等，与调度器配合完成更新任务的包装与调度、捕获与冒泡过程、DIFF 算法、EffectTag List 的维护、维护 FiberTree 双缓存结构、组件生命周期的调用、配合渲染器完成 DOM 渲染等。
 
 ## React API 概况
 
@@ -174,7 +193,7 @@ React 开发者对于 JSX 应该是很熟悉了，更专业一点来说：
 ```js
 const work = () => {dosomething();}
 const Conponent = () => {
-	return (
+ return (
     <div style={{color: '#ffffff'}}>
       <h1 class="title">heading</h1>
       <div class="body" onClick={work}>content</div>
@@ -220,18 +239,18 @@ const Conponent = () => {
 分析上面的解析过程可知：
 
 - babel 插件在解析 jsx 代码时，js 部分是不需要解析的，html 部分会被解析为 React.createElement 语法。
-- 静态的部分会被加上 `/*#__PURE__*/` 的静态内容标记。
+- `React.createElement` 会被加上 `/*#__PURE__*/` 的静态内容标记。
 - 多个子节点并不是通过数组传入而是以多个参数的形式传入的，这个可以通过 rest 运算符处理。
 
-JSX 会将代码中 html 转化为渲染函数（h 函数、createElement函数）的语法糖，以方便框架对 JSX 的内容进行处理。这实际上使得 JSX 语法与框架解耦，使 JSX 能够运用到各种实现了渲染函数的框架之中。
+JSX 会将代码中 html 转化为渲染函数（如 vue 中的 h 函数、createElement函数）的语法糖，以方便框架对 JSX 的内容进行处理。这实际上使得 JSX 语法与框架解耦，使 JSX 能够运用到各种实现了渲染函数的框架之中。
 
 ## ReactElement
 
-下面将介绍 ReactElement 以及 ReactElement 相关的工具函数。
+下面将介绍 ReactElement 以及 VDOM 的概念。
 
 ### createElement
 
-createElement 创建创建 React 元素（ReactElement）。先来看一个例子，假如一个经过 babel 解析过的 JSX 代码如下：
+createElement 创建 React 元素（ReactElement）。先来看一个例子，假如一个经过 babel 解析过的 JSX 代码如下：
 
 ```js
 React.createElement("div", {
@@ -264,18 +283,17 @@ React.createElement("div", {
 
 这便是 ReactElement 的真面目了。React 是基于 VDOM 的运行时框架，其内部节点的创建、更新、patch、删除都是通过 VDOM 来实现的。
 
-我们通常熟知的 VDOM 节点，包括 type、attr、children 三个元素，那么我们再来看 ReactElement 的特征，ReactElement 对象也包含了这三个属性，只不过 attr 和 children 是放在 props 中的，我们知道 React 组件的设计哲学是`组件是靠两条腿走路的的，分别是props 和 state，props 关注组件与外部的状态，state 关注组件内部的状态`，这一点也是符合理念的。
+我们通常熟知的 VDOM 节点，包括 type、attr、children 三个元素，那么我们再来看 ReactElement 的特征，ReactElement 对象也包含了这三个属性，只不过 attr 和 children 是放在 props 中的，我们知道 React 组件的设计哲学是`组件是依赖 props 和 state更新，props 关注组件与外部的状态，state 关注组件内部的状态`，这一点也是符合理念的。
 
 下面的内容我们将从源码的角度继续探究：
 
 createElement 的源码：
 
 ```ts
+// src/react/packages/react/src/ReactElement.js
 // 根据元素类型 type，元素属性 config 和元素子节点（数组） children 创建 react 元素
 export function createElement(type, config, children) {
   let propName;
-
-  // Reserved names are extracted
   const props = {};
 
   let key = null;
@@ -305,9 +323,7 @@ export function createElement(type, config, children) {
       }
     }
   }
-
-  // Children can be more than one argument, and those are transferred onto
-  // the newly allocated props object.
+  // 计算 children 的长度，children 是作为剩余参数传入的
   const childrenLength = arguments.length - 2;
   if (childrenLength === 1) {
     // 单一子节点直接赋值
@@ -318,10 +334,10 @@ export function createElement(type, config, children) {
     for (let i = 0; i < childrenLength; i++) {
       childArray[i] = arguments[i + 2];
     }
+    // 多个子节点转为数组
     props.children = childArray;
   }
 
-  // Resolve default props
   // 元素默认的属性
   if (type && type.defaultProps) {
     const defaultProps = type.defaultProps;
@@ -331,19 +347,238 @@ export function createElement(type, config, children) {
       }
     }
   }
+  // 调用工厂函数创建 ReactElement。
   return ReactElement(
-    // 元素类型
     type,
-    // 内部属性
     key,
     ref,
     self,
     source,
     ReactCurrentOwner.current,
-    // 元素属性
     props,
   );
 }
 ```
 
+如上函数具有如下的核心功能：
+
+- 计算 key、ref、self、source 属性。
+- 计算 props，包括 configs 中除 RESERVED_PROPS 之外的属性、children 属性、当前类型的 ReactElement 所应该具有的默认属性(如 'div' 元素的默认属性)。
+- 调用 ReactElement 创建 ReactElement。
+
+下面我们接着看下 ReactElement 工厂函数，这对于我们了解 React 虚拟 DOM 的结构至关重要:
+
+```js
+const ReactElement = function (type, key, ref, self, source, owner, props) {
+  // 新建一个ReactElement对象
+  const element = {
+    // ReactElement 的独一无二的标志，用来判断 element 是否是 ReactElement。
+    $$typeof: REACT_ELEMENT_TYPE,
+    // element 的类型
+    type: type,
+    // element 的 key 值，这对 React 复用元素很重要
+    key: key,
+    // element 的 ref 属性，元素的引用
+    ref: ref,
+    // element 的属性，包括了 children、class、id 等
+    props: props,
+    // element 的属主，当前元素所属于的 Fiber，由哪一个 Fiber 所创建。
+    _owner: owner,
+  };
+
+  return element;
+};
+```
+
+- `$$typeof`：ReactElement 的独一无二的标志，用来判断 element 是否是 ReactElement，`REACT_ELEMENT_TYPE = symbolFor('react.element')`。
+- type：element 的类型，注意如 'div'、'span'等。
+- key：element 的 key 值，这对 React 复用元素很重要。
+- ref:：element 的 ref 属性，元素的引用。
+- props：element 的属性，包括了 children、class、id 等。
+- _owner：element 的属主，当前元素所属于的 Fiber，由哪一个 Fiber 所创建。
+
+## isValidElement
+
+isValidElement 判断 element 是否是合法的 ReactElement。
+
+```js
+export function isValidElement(object) {
+  return (
+    typeof object === 'object' &&
+    object !== null &&
+    // $$typeof: Symbol(react.element)
+    object.$$typeof === REACT_ELEMENT_TYPE 
+  );
+}
+```
+
+## VDOM
+
+VDOM 是对 DOM（Document Object Model）的一种轻量级的 JavaScript 呈现方式，多用于 React、Vue 等声明式的前端框架中。使用 VDOM 有如下的优点：
+
+- 轻量级。VDOM 只需要记录很少的信息就能展示 DOM 呈现方式和结构。
+- 速度更快。VDOM 能够对连续更新做批量处理，减少 reflow 和 repaint。
+- 抽象层，跨平台。VDOM 在 DOM Tree 的基础上抽象出 VDOM Tree，VDOM Tree 知识一种数据结构，不依赖于平台特性。这使得核心逻辑能够运行在不同的平台上，屏蔽掉平台的兼容性。
+- 可控制，可优化。因为 VDOM 足够简单，JavaScript 能够很方便的操纵和控制 UI 展现，如删除、增加、更新、移动节点等。同时，对于页面状态的更新有了更加可控的优化手段，如 DIFF 算法、节点复用。
+
+当然 VDOM 也存在一些问题：
+
+- 初始化的时间成本。初始化时需要将 UI 的展现转化为具体的 VDOM Tree，这部分的转换需要一定的时间成本。
+- DIFF 算法的成本。尽管 JavaScript 操作 VDOM 的效率足够高，但是在非常大的 VDOM Tree 的结构面前，DIFF 的成本就显得很重要。尽管各个框架针对 VDOM 使用了各种的优化手段，如 React 中基于链表的单向 DIFF、Vue 中基于数组的双向 DIFF、基于 key 和 type 比较的节点复用等，DIFF 的成本都是 VDOM 的速度瓶颈所在。
+
+下图是某个节点的全部属性，可见 DOM 是很“重”的。
+
+<img src="https://cdn.jsdelivr.net/gh/jonsam-ng/image-hosting@master/20220412/image.70qoilhvqnk0.webp" alt="DOM 很重" data-zoomable />
+
+## 扩展
+
+### React 的详细目录结构和作用
+
+```txt
+packages.
+├── create-subscription
+├── dom-event-testing-library
+├── eslint-plugin-react-hooks
+├── jest-mock-scheduler
+├── jest-react
+├── react // 核心 API
+├── react-art // 平台相关，用于 canvas, svg
+├── react-cache
+├── react-client
+├── react-debug-tools
+<!-- devtools 相关 -->
+├── react-devtools
+├── react-devtools-core
+├── react-devtools-extensions
+├── react-devtools-inline
+├── react-devtools-shared
+├── react-devtools-shell
+├── react-devtools-timeline
+├── react-dom // 平台相关，用于 web 环境
+├── react-fetch
+├── react-fs
+├── react-interactions
+├── react-is
+├── react-native-renderer // 平台相关，用于 ReactNative
+├── react-noop-renderer
+├── react-pg
+├── react-reconciler // 调和器相关
+├── react-refresh
+<!-- SSR 相关 -->
+├── react-server
+├── react-server-dom-relay
+├── react-server-dom-webpack
+├── react-server-native-relay
+├── react-suspense-test-utils
+├── react-test-renderer
+├── scheduler // 调度器相关
+├── shared
+├── use-subscription
+└── use-sync-external-store
+```
+
+### 为什么 React 17 之前需要显式引入 React，17 版本就不需要了呢？
+
+在上面 JSX 的编译过程中，我们可以看到到，JSX 实际上不是浏览器所能够识别的，需要 babel、或者 TS 等工具来进行解析，那么解析之后的结果当然就是带着渲染函数语法糖的 JS 代码，所以如果没引入 React，通常会报`ReferenceError： React is not defined`的错误。
+
+在 React17 中官方与 babel 合作，引入了全新的的 JSX 的转化。
+
+> React 17 在 React 的 package 中引入了两个新入口，这些入口只会被 Babel 和 TypeScript 等编译器使用。新的 JSX 转换不会将 JSX 转换为 React.createElement，而是自动从 React 的 package 中引入新的入口函数并调用。【参考：[React 官网：介绍全新的 JSX 转换](https://zh-hans.reactjs.org/blog/2020/09/22/introducing-the-new-jsx-transform.html)】
+
+这里将渲染函数与 React 框架进行了解耦，由编译工具从 React 中引入渲染函数，完成编译 JSX 的目标。
+
+```js
+// 由编译器引入（禁止自己引入！）
+import {jsx as _jsx} from 'react/jsx-runtime';
+
+function App() {
+  return _jsx('h1', { children: 'Hello world' });
+}
+```
+
+编译 JSX 的工具会自动引入渲染函数 `jsx`，我们不在需要自己引入。
+
+### React 中的 VDOM 是 ReactElement 吗？
+
+个人认为，ReactElement 只是 React 中 VDOM 的一部分，另外一部分是后面要展开的 Fiber。React 依赖 Fiber 来达到异步可中断的 concurrent 模式更新的目标，同时依赖 ReactDOM 来描述组件 UI 的状态。
+
+VDOM 本质上是 DOM 元素的 JavaScript 抽象和描述。ReactElement 描述了 DOM 的静态类型、属性和结构，Fiber 则在此基础上描述组件的渲染状态、更新链表、针对 DOM 的 Effect Tag、调度更新的优先级等。
+
+### _owner 是如何连接 ReactElement 和 Fiber 的？_owner 有什么作用？
+
+由上面的分析可以看出，_owner 的赋值其实是 ReactCurrentOwner.current 的值，对 ReactCurrentOwner.current 的赋值可以追到 `finishClassComponent` 函数中：
+
+```js
+// src/react/packages/react-reconciler/src/ReactFiberBeginWork.new.js
+ReactCurrentOwner.current = workInProgress;
+```
+
+而 finishClassComponent 主要在 `updateClassComponent` 、 `mountIncompleteClassComponent` 和 `mountIndeterminateComponent` 中 ClassComponent 的部分中调用，可见 _owner 实际上是用于类组件的。继续追 workInProgress，发现 workInProgress 是在 performUnitOfWork 函数中赋值的：
+
+```js
+function performUnitOfWork(unitOfWork: Fiber): void {
+  let next;
+  next = beginWork(current, unitOfWork, subtreeRenderLanes);
+
+  if (next === null) {
+    completeUnitOfWork(unitOfWork);
+  } else {
+    workInProgress = next;
+  }
+
+  ReactCurrentOwner.current = null;
+}
+```
+
+这个函数将在调和器的部分详细讲，现在可以清楚的是 workInProgress 表示当前调和器正在处理的 Fiber，在渲染类组件时将 workInProgress 记录到React 内部共享变量 ReactCurrentOwner.current 中，此时 createElement 时就能够获取到当前 ReactElement 所属的 Fiber 了。
+
+_owner 的作用：
+
+1. 通过 element._owner 查询到 element 所属的 Fiber 和 组件。
+
+例如，在检查 element.children 的子元素是否具有 key 值的 `validateExplicitKey`  函数中有如下代码：
+
+```js
+if (
+    element &&
+    element._owner &&
+    element._owner !== ReactCurrentOwner.current
+  ) {
+    // 获取此元素所属的组件的名称
+    childOwner = ` It was passed a child from ${getComponentNameFromType(
+      element._owner.type,
+    )}.`;
+  }
+  ```
+
+## 问题
+
+### VDOM Tree 和 Fiber Tree 是如何连接的？
+
+Fiber 中有一个属性 stateNode 存储当前 Fiber 所对应的组件的渲染模板，执行这个模板就可以得到 VDOM Tree。后文详述。
+
+下面以首次渲染过程为例说明两者之间的关系：
+
+1. JSX 组件将会编译为带渲染函数的 js 模板（渲染模板）；
+2. 调用 ReactDOM.render 创建 FiberRoot 和 HostRootFiber，并生成首次更新的同步任务，同步任务立即执行；
+3. 渲染任务被回调，开始渲染，调和 FiberTree，挂载（更新）组件树；
+4. 在挂载（更新）组件时执行渲染模板，createElement 在运行时被层层调用，生成 ReactElement Tree，也就是 VDOM Tree；
+5. VDOM Tree 转化为 DOM Tree，渲染节点到屏幕。
+6. 新的渲染任务被回调时，回到 3。
+
+### 为什么用 className?
+
+参考：[为什么Vue的JSX中的class属性用了class，而React却用了className？](https://www.zhihu.com/question/441424453)
+
+### ReactElement Tree、Fiber Tree 和 DOM Tree 的关系？
+
 ## 总结
+
+本文主要讲解 React Element 与基础概念，总结重点如下：
+
+- 阅读 React 源码的原因、方法和意义。
+- React 中源码的目录结构和核心包的作用。
+- React API 的概况。
+- JSX 的解析原理。
+- ReactElement 创建过程，以及各个属性的含义。
+- VDOM 的概念和优缺点。

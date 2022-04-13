@@ -10,22 +10,6 @@
 
 ## 前言
 
-
------
-
-熟悉 React 的小伙伴可能都知道，React 大致上可以分成调和器、调度器、渲染器几个部分。对应到 React 的源码里，最重要的就是有四个包，分别是 react、react-dom、scheduler、react-reconciler。克隆下源码，大概像是这样：
-
-<img :src="$withBase('/assets/img/react-packages.png')" alt="React 源码包结构" data-zoomable>
-
-先解释一下上述几个包的核心作用：
-
-- react：导出 React 的核心 API，供外部应用使用。比如 Fragment、forwardRef、memo、hook全家桶等。
-- react-dom：React 基于 web 的渲染层，导出一些渲染相关的 API，比如说 render、createPortal、createRoot 等。
-- scheduler：React 中的调度器，负责任务队列的维护，基于优先级调度任务。
-- react-reconciler：React 中的调和器，负责 React 渲染的整体流程。
-
-本文将从渲染的整体流程入手，探究一下调度器的核心代码。有一些基础的内容或者代码细节，将会在系列文章中穿插着分享。
-
 ## updateContainer：星星之火，可以燎原
 
 > updateContainer 是燎原的第一颗火星。
@@ -312,7 +296,6 @@ React 中需要基于优先级的调度机制以区分不同渲染任务的轻�
 
 总结一些本文的内容：
 
-- 阅读 React 源码的原因、方法和意义。
 - updateContainer：初始化更新任务，调用 scheduleUpdateOnFiber 发出调度请求。
 - scheduleUpdateOnFiber：收集优先级，计算 FiberRoot。调用 ensureRootIsScheduled，确保 FiberRoot 发起同步或者异步调度。
 - ensureRootIsScheduled：包装同步更新任务和异步更新任务并采用不同的调度策略。同步更新任务入同步任务队列在微任务中执行，异步更新任务交给调度器进行调度与回调。

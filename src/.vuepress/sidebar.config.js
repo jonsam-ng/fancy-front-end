@@ -136,6 +136,7 @@ const sidebar = {
       sidebarDepth: 1,
       children: [
         `${reactPath}/tour/react-basic-element`,
+        `${reactPath}/tour/react-basic-element-children`,
         `${reactPath}/tour/react-reconciliation-1`,
         `${reactPath}/tour/react-reconciliation-2`,
       ],

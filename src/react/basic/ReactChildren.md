@@ -16,7 +16,7 @@ React Children 有如下四个方法：
   count,
   toArray,
   only,
-},
+}
 ```
 
 ## map
