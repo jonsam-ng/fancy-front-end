@@ -20,7 +20,7 @@
 
 ## 文章标记
 
-文章包体下会有一些提示性的标记，如核心、重点、了解、React 版本等。
+文章标题下会有一些提示性的标记，如核心、重点、了解、React 版本等。
 
 文章重要性标记：
 
@@ -33,8 +33,8 @@
 ## Plan
 
 - [ ] React 源码基础
-  - [ ] React Element 与基础概念 P0
-  - [ ] React ReactChildren 原理 P1
+  - [x] ReactElement 与基础概念 P0
+  - [x] ReactChildren 与节点操纵 P0
   - [ ] React 整体结构 P0
   - [ ] React 首次渲染过程解读 P0
   - [ ] React 中的位运算技巧 P1

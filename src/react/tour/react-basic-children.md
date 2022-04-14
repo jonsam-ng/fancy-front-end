@@ -1,4 +1,4 @@
-# React 源码漂流记：React.Children 工具函数
+# React 源码漂流记：ReactChildren 与节点操纵
 
 <Badges :content="[{type: 'tip', text: 'React17'}, {type: 'tip', text: '精简'}]" />
 
@@ -70,7 +70,7 @@ function mapChildren(
 ```
 
 这个 `mapIntoArray` 比较复杂，它所支持的 children 的类型很多，基础类型包括 undefined、boolean、null、string、number 或者标记为 ReactElement 或者 ReactPortal 的 object。如果把基础类型标记为 T 的话，mapIntoArray 还支持 children 的类型为 T[] 或者迭代器 object。
-后者是通过循环、迭代实现的，不在赘述，这里我们重点看基础类型。
+后者是通过循环、迭代实现的，不再赘述，这里我们重点看基础类型。
 
 ```js
 function mapIntoArray(
@@ -194,6 +194,8 @@ function onlyChild<T>(children: T): T {
 }
 ```
 
+## cloneElement
+
 ## 应用
 
 在组件库等复杂的节点运用场景中常常会使用到 React.Children 工具，而且通常会与其他的节点操作 API 如 `cloneElement` 或者 `createElement` 一起使用。下面以 antd 代码中 `Timeline` 组件的一处使用场景作为示例：
@@ -216,7 +218,6 @@ const items = React.Children.map(
     });
   }
 );
-
 ```
 
 ## 扩展
@@ -303,7 +304,6 @@ type ReactText = string | number;
 type ReactChild = ReactElement | ReactText;
 type ReactNode = ReactChild | ReactFragment | ReactPortal | boolean | null | undefined;
 
-
 namespace JSX {
   interface Element extends React.ReactElement<any, any> { }
 }
@@ -312,7 +312,7 @@ namespace JSX {
 从这些类型可以看出来，三者是具有包含关系的，其中 `ReactNode > JSX.Element > ReactElement`。
 
 - ReactNode：ReactNode 代表 React 节点，其类型中包含了 ReactChild，ReactChild 中又包含了 ReactElement。
-- JSX.Element：JSX.Element 和 ReactElement 基本一致，但是 JSX.Element 作为 JSX 的规范，它比 ReactNode 更加通用，因为 type 和 props 都白定义为 any。
+- JSX.Element：JSX.Element 和 ReactElement 基本一致，但是 JSX.Element 作为 JSX 的规范，它比 ReactNode 更加通用，因为 type 和 props 都被定义为 any。
 - ReactElement：ReactElement 是包含 `type`、`props`、`key`等属性的 object，它是 DOM 的一种抽象表示，是 FunctionComponent （或者 ClassComponent 中 render 函数）执行的结果。
 
 ### 原版代码中的池化模式的应用
@@ -368,8 +368,6 @@ function releaseTraverseContext(traverseContext) {
 ```
 
 池化模式在需要频繁创建对象（连接）的场景中可以参考。缓存池大小 POOL_SIZE 需要权衡考虑效率和内存问题。如果 POOL_SIZE 太小，就不能很好的起到缓存的效果，如果太大缓存池本身就需要占用太多内存，而且用不完的 context 对象也容易造成浪费和低效。
-
-## 问题
 
 ## 总结
 

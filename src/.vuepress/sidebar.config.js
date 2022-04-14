@@ -28,15 +28,19 @@ const antdVuePath = "/antd-vue";
 // hls 目录
 const hlsPath = "/hls";
 // create react app 目录
-const craPath = "cra";
+const craPath = "/cra";
 // solid 目录
-const solidPath = "solid";
+const solidPath = "/solid";
 // svelte 目录
-const sveltePath = "svelte";
+const sveltePath = "/svelte";
 // axios 目录
-const axiosPath = "axios";
+const axiosPath = "/axios";
 // express 目录
-const expressPath = "express";
+const expressPath = "/express";
+// html2canvas 目录
+const html2canvasPath = "/html2canvas";
+// single-spa 目录
+const singleSpaPath = "/single-spa";
 
 /*****************************************************************************************
  *                                 侧边栏配置
@@ -136,7 +140,7 @@ const sidebar = {
       sidebarDepth: 1,
       children: [
         `${reactPath}/tour/react-basic-element`,
-        `${reactPath}/tour/react-basic-element-children`,
+        `${reactPath}/tour/react-basic-children`,
         `${reactPath}/tour/react-reconciliation-1`,
         `${reactPath}/tour/react-reconciliation-2`,
       ],
@@ -366,6 +370,36 @@ const sidebar = {
       ],
     },
   ],
+  html2canvas: [
+    {
+      title: "开始上手",
+      collapsable: true,
+      path: `${html2canvasPath}/`,
+      sidebarDepth: 1,
+    },
+    {
+      title: "Core",
+      collapsable: false,
+      path: `${html2canvasPath}/core/`,
+      sidebarDepth: 2,
+      children: [],
+    },
+  ],
+  singleSpa: [
+    {
+      title: "开始上手",
+      collapsable: true,
+      path: `${singleSpaPath}/`,
+      sidebarDepth: 1,
+    },
+    {
+      title: "applications",
+      collapsable: false,
+      path: `${singleSpaPath}/app/`,
+      sidebarDepth: 2,
+      children: [`${singleSpaPath}/app/apps`],
+    },
+  ],
 };
 
 /*****************************************************************************************
@@ -383,6 +417,8 @@ const registeredSidebars = {
   "/jquery": sidebar.JQuery,
   "/qiankun": sidebar.qianKun,
   "/snabbdom": sidebar.snabbdom,
+  "/html2canvas": sidebar.html2canvas,
+  "/single-spa": sidebar.singleSpa,
 };
 
 /*****************************************************************************************
@@ -518,6 +554,10 @@ const nav = [
       {
         text: "snabbdom 源码",
         link: `${snabbdomPath}/`,
+      },
+      {
+        text: "single-spa 源码",
+        link: `${singleSpaPath}/`,
       },
     ],
   },

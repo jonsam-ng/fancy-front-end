@@ -4,8 +4,9 @@
 
 前提：
 
+
 | 参数         | 描述  |
-| ------------ | ----- |
+| -------------- | ------- |
 | qiankun 版本 | 2.7.0 |
 
 ## 介绍
@@ -29,16 +30,11 @@ qiankun 是一个基于 single-spa 的微前端实现库，旨在帮助大家能
 
 ::: tip 提示
 本文的源码解析将包括 single-spa 的源码，先分开解析各自的原理，然后串讲起来。
+
+参考：[FE Source Stack](/single-spa/)
 :::
 
-Single-spa 是一个将多个单页面应用聚合为一个整体应用的 JavaScript 微前端框架。 使用 single-spa 进行前端架构设计可以带来很多好处，例如:
-
-- 在同一页面上使用多个前端框架 而不用刷新页面 (React, AngularJS, Angular, Ember, 你正在使用的框架)。
-- 独立部署每一个单页面应用。
-- 新功能使用新框架，旧的单页应用不用重写可以共存。
-- 改善初始加载时间，延迟加载代码。
-
-## 参考
+参考
 
 - [微前端连载 6/7：微前端框架 - qiankun 大法好](https://juejin.cn/post/6846687602439897101#heading-22)
 - github: [qiankun repo](https://github.com/umijs/qiankun)
