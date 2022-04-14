@@ -3,7 +3,7 @@
  ******************************************************************************************/
 
 export default [
-  ["link", { rel: "icon", href: `assets/img/favicon.ico` }],
+  ["link", { rel: "icon", href: `/assets/img/favicon.ico` }],
   ["meta", { name: "referrer", content: "no-referrer-when-downgrade" }],
   [
     "meta",

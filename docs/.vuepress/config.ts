@@ -28,7 +28,7 @@ export default defineConfig4CustomTheme<VdoingThemeConfig>({
   themeConfig: {
     nav,
     sidebarDepth: 1,
-    logo: `assets/img/logo.png`,
+    logo: `/assets/img/logo.png`,
     repo: "jonsam-ng/fe-source-reading",
     searchMaxSuggestions: 10,
     lastUpdated: "上次更新",
