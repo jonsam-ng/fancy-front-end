@@ -41,7 +41,7 @@ export default [
         link: "/react/summary/index/",
       },
       {
-        text: "React源码漂流记",
+        text: "📙 React源码漂流记",
         link: "/react/tour/index/",
       },
     ],
