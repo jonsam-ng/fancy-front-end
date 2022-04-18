@@ -1,13 +1,12 @@
 {
-  "name": "theme-vdoing-blog",
+  "name": "fancy-front-end",
   "version": "1.0.0",
   "scripts": {
     "dev": "vuepress dev docs",
     "build": "vuepress build docs",
     "deploy": "bash scripts/deploy.sh",
     "editFm": "node utils/editFrontmatter.js",
-    "baiduPush": "node utils/baiduPush.js https://ml.jonsam.site && bash scripts/baiduPush.sh",
-    "publish": "cd ./vdoing && npm publish && cd .. && yarn updateTheme",
+    "baiduPush": "node utils/baiduPush.js https://source.jonsam.site && bash scripts/baiduPush.sh",
     "updateTheme": "yarn remove vuepress-theme-vdoing && rm -rf node_modules && yarn && yarn add vuepress-theme-vdoing -D"
   },
   "license": "MIT",
