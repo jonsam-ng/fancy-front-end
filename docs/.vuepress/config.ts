@@ -83,4 +83,10 @@ export default defineConfig4CustomTheme<VdoingThemeConfig>({
   },
   // 监听文件变化并重新构建
   extraWatchFiles: [".vuepress/config.ts", ".vuepress/config/htmlModules.ts"],
+  configureWebpack: {
+    node: {
+      global: true,
+      process: true,
+    },
+  },
 });
