@@ -30,9 +30,7 @@ function readFileList(dir = docsRoot, filesList = []) {
         } else {
           // 超过两个‘.’的
           console.log(
-            chalk.yellow(
-              `warning: 该文件 "${filePath}" 没有按照约定命名，将忽略生成相应数据。`
-            )
+            `warning: 该文件 "${filePath}" 没有按照约定命名，将忽略生成相应数据。`
           );
           return;
         }
