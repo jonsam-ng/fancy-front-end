@@ -81,9 +81,9 @@ export default <UserPlugins>[
     {
       choosen: "gitalk",
       options: {
-        clientID: "9f6676a82c6134301680",
-        clientSecret: "4bbf7178807c1a1d2c7b91080e0bd25bcb72a089",
-        repo: "fancy-machine-learnning", // GitHub 仓库
+        clientID: "d3180fd85e7addd9c036",
+        clientSecret: "933c6df009c1d8264e247ce9c1a68687dff0b5f6",
+        repo: "fancy-front-end", // GitHub 仓库
         owner: "jonsam-ng", // GitHub仓库所有者
         admin: ["jonsam-ng"], // 对仓库有写权限的人
         // distractionFreeMode: true,
