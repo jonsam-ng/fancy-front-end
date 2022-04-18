@@ -87,6 +87,7 @@ export default defineConfig4CustomTheme<VdoingThemeConfig>({
     node: {
       global: true,
       process: true,
+      self: true,
     },
   },
 });

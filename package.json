@@ -30,6 +30,7 @@
     "yamljs": "^0.3.0"
   },
   "dependencies": {
-    "vue-pdf-embed": "^1.1.1"
+    "vue-pdf-embed": "^1.1.1",
+    "global": "^4.4.0"
   }
 }
