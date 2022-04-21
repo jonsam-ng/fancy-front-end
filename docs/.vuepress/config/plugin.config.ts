@@ -8,7 +8,13 @@ import dayjs from "dayjs";
 
 export default <UserPlugins>[
   "vuepress-plugin-baidu-autopush", // 百度自动推送
-  "@vuepress/plugin-pwa",
+  [
+    "@vuepress/plugin-pwa",
+    {
+      serviceWorker: true,
+      updatePopup: true,
+    },
+  ],
   "vuepress-plugin-reading-time",
   [
     "vuepress-plugin-baidu-tongji", // 百度统计
