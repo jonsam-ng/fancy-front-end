@@ -11,6 +11,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@renovamen/vuepress-plugin-katex": "^0.2.0",
     "@vuepress/plugin-pwa": "^1.9.7",
     "busuanzi.pure.js": "^1.0.3",
     "dayjs": "^1.9.7",
