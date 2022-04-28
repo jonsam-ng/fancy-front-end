@@ -74,7 +74,7 @@ export default [
 		],
 	},
 	{
-		text: "更多",
+		text: "进阶",
 		link: "/web/",
 		items: [
 			{
@@ -85,13 +85,18 @@ export default [
 				text: "Awesome NodeJS",
 				link: "/node/",
 			},
-			{
-				text: "Q&A",
-				link: "/qa/",
-			},
 		],
 	},
-	{ text: "关于", link: "/about/" },
+	{
+		text: "更多",
+		link: "/web/",
+		items: [
+			{ text: "Q&A", link: "/qa/" },
+			{ text: "导航", link: "/nav/" },
+			{ text: "关于", link: "/about/" },
+		],
+	},
+
 	{
 		text: "索引",
 		link: "/archives/",
