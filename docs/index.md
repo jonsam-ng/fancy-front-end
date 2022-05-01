@@ -16,9 +16,9 @@ features: # 可选的
     details: 响应式原理、runtime-core、runtime-dom、compiler...
     link: /vue3/index
     imgUrl: /assets/img/vue.svg
-  - title: 更多
+  - title: 进阶
     details: 更多源码阅读，qiankun、single-spa、vite...
-    link: /more/index
+    link: /web/index
     imgUrl: /assets/img/tech.png
 
 # 文章列表显示方式: detailed 默认，显示详细版文章列表（包括作者、分类、标签、摘要、分页等）| simple => 显示简约版文章列表（仅标题和日期）| none 不显示文章列表
