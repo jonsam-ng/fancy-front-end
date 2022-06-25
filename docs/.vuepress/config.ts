@@ -16,8 +16,8 @@ export default defineConfig4CustomTheme<VdoingThemeConfig>({
     "/": {
       lang: "zh-CN",
       title: siteName,
-      description: "前端源码阅读栈，精读 React、Vue3 源码"
-    }
+      description: "前端源码阅读栈，精读 React、Vue3 源码",
+    },
   },
   themeConfig: {
     nav,
@@ -46,7 +46,7 @@ export default defineConfig4CustomTheme<VdoingThemeConfig>({
     // 最近更新栏
     updateBar: {
       showToArticle: true, // 显示到文章页底部，默认true
-      moreArticle: "/archives" // “更多文章”跳转的页面，默认'/archives'
+      moreArticle: "/archives", // “更多文章”跳转的页面，默认'/archives'
     },
     rightMenuBar: true, // 是否显示右侧文章大纲栏，默认true (屏宽小于1300px下无论如何都不显示)
     sidebarOpen: true, // 初始状态是否打开左侧边栏，默认true
@@ -58,36 +58,40 @@ export default defineConfig4CustomTheme<VdoingThemeConfig>({
     // 文章默认的作者信息，(可在md文件中单独配置此信息) string | {name: string, link?: string}
     author: {
       name: "jonsam", // 必需
-      link: "https://github.com/jonsam-ng" // 可选的
+      link: "https://github.com/jonsam-ng", // 可选的
     },
     // 博主信息 (显示在首页侧边栏)
     blogger: {
       avatar:
         "https://www.jonsam.site/wp-content/uploads/2019/10/c1fbc401c64937aaec6cb53359e7c57eabd8e477-e1570649725791.gif",
       name: "Jonsam NG",
-      slogan: "让有意义的事变得有意思，让有意思的事变得有意义"
+      slogan: "让有意义的事变得有意思，让有意思的事变得有意义",
     },
     social,
     footer: {
       createYear: 2022,
-      copyrightInfo: `${siteName} | Made by <a href="https://www.jonsam.site" target="_blank">Jonsam</a> by ❤`
+      copyrightInfo: `${siteName} | Made by <a href="https://www.jonsam.site" target="_blank">Jonsam</a> by ❤`,
     },
     // 自定义html(广告)模块
-    htmlModules
+    htmlModules,
   },
   head,
   plugins,
   markdown: {
     lineNumbers: true,
-    extractHeaders: ["h2", "h3", "h4", "h5", "h6"] // 提取标题到侧边栏的级别，默认['h2', 'h3']
+    extractHeaders: ["h2", "h3", "h4", "h5", "h6"], // 提取标题到侧边栏的级别，默认['h2', 'h3']
   },
   // 监听文件变化并重新构建
-  extraWatchFiles: [".vuepress/config.ts", ".vuepress/config/htmlModules.ts"],
+  extraWatchFiles: [
+    ".vuepress/config.ts",
+    ".vuepress/config/htmlModules.ts",
+    ".vuepress/config/nav.config.ts",
+  ],
   configureWebpack: {
     node: {
       global: true,
       process: true,
-      self: true
-    }
-  }
+      self: true,
+    },
+  },
 });

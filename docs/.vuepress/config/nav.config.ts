@@ -88,6 +88,10 @@ export default [
     ],
   },
   {
+    text: "话题",
+    link: "/topic/",
+  },
+  {
     text: "更多",
     link: "/nav/",
     items: [
