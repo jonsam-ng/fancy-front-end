@@ -30,6 +30,6 @@ jobs:
         env: # 设置环境变量
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CODING_TOKEN: ${{ secrets.CODING_TOKEN }}
-        run: npm install && npm run deploy
+        run: npm install pnpm -g && pnpm install && pnpm run deploy
 
       # 如只提交到github pages可以使用github-pages-deploy-action，详见: https://github.com/JamesIves/github-pages-deploy-action

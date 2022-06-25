@@ -7,7 +7,7 @@
     "deploy": "bash scripts/deploy.sh",
     "editFm": "node utils/editFrontmatter.js",
     "baiduPush": "node utils/baiduPush.js https://source.jonsam.site && bash scripts/baiduPush.sh",
-    "updateTheme": "yarn remove vuepress-theme-vdoing && rm -rf node_modules && yarn && yarn add vuepress-theme-vdoing -D"
+    "updateTheme": "pnpm remove vuepress-theme-vdoing && rm -rf node_modules && pnpm && pnpm add vuepress-theme-vdoing -D"
   },
   "license": "MIT",
   "devDependencies": {
