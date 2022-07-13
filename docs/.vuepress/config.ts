@@ -88,4 +88,9 @@ export default defineConfig4CustomTheme<VdoingThemeConfig>({
       self: true,
     },
   },
+  pwa: {
+    workboxOptions: {
+      skipWaiting: true,
+    },
+  },
 });
