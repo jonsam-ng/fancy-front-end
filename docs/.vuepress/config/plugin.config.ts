@@ -123,7 +123,7 @@ export default <UserPlugins>[
   [
     "sitemap",
     {
-      hostname: "source.jonsam.site",
+      hostname: "https://source.jonsam.site",
     },
   ],
   // see https://github.com/lorisleiva/vuepress-plugin-seo
