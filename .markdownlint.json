@@ -2,5 +2,5 @@
   "default": true,
   "no-inline-html": false,
   "line-length": false,
-  "ul-indent": { "indent": 4 }
+  "ul-indent": { "indent": 2 }
 }
