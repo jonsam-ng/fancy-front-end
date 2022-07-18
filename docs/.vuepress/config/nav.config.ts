@@ -97,6 +97,7 @@ export default [
     items: [
       { text: "导航", link: "/nav/" },
       { text: "Q&A", link: "/qa/" },
+      { text: "幻灯片", link: `/slides/#/1` },
       { text: "关于", link: "/about/" },
     ],
   },
