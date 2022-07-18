@@ -1,0 +1,9 @@
+{
+  "default": true,
+  "no-inline-html": false,
+  "line-length": false,
+  "single-h1": false,
+  "header-style": false,
+  "blanks-around-headers": false,
+  "ul-indent": { "indent": 2 }
+}

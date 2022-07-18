@@ -1,0 +1,17 @@
+{
+  "scripts": {
+    "build": "slidev build",
+    "dev": "slidev --open",
+    "export": "slidev export"
+  },
+  "dependencies": {
+    "@slidev/cli": "^0.34.3",
+    "@slidev/theme-default": "*",
+    "@slidev/theme-seriph": "*"
+  },
+  "name": "slides",
+  "devDependencies": {
+    "@iconify-json/mdi": "^1.1.28",
+    "@iconify-json/uim": "^1.1.2"
+  }
+}
