@@ -1,6 +1,6 @@
 <template>
   <span
-    class="inline-block px-1 text-sm border rounded-sm font-bold"
+    class="inline ml-3 mr-3 px-1 text-sm border rounded-sm font-bold"
     :class="style"
   >
     <slot />

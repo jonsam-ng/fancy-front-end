@@ -9,7 +9,7 @@
 export default {
   props: {
     type: { type: String, default: "info" },
-    title: { type: String, default: "" },
+    title: "",
   },
   data() {
     return {
@@ -26,7 +26,10 @@ export default {
   border-radius: 8px;
   padding: 16px;
   line-height: 24px;
-  font-size: 14px;
+  font-size: 12px;
+  width: auto;
+  min-width: 45%;
+  display: inline-block;
 }
 .alert.alert-info {
   border-color: rgba(60, 60, 60, 0.12);

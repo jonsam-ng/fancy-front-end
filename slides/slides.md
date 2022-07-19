@@ -14,7 +14,7 @@ class: 'text-center'
 # https://sli.dev/custom/highlighters.html
 highlighter: shiki
 # show line numbers in code blocks
-lineNumbers: true
+lineNumbers: false
 fonts:
   # 基础字体
   sans: '微软雅黑'
@@ -22,6 +22,7 @@ fonts:
   serif: 'Robot Slab'
   # 用于代码块、内联代码等
   mono: 'Fira Code'
+colorSchema: 'auto'
 ---
 
 # 幻灯片
