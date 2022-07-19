@@ -24,8 +24,8 @@ export default {
   margin: 16px 0;
   border: 1px solid transparent;
   border-radius: 8px;
-  padding: 16px;
-  line-height: 24px;
+  padding: 8px;
+  line-height: 20px;
   font-size: 12px;
   width: auto;
   min-width: 45%;

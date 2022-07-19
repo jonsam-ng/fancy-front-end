@@ -859,4 +859,3 @@ function doTask(pendingPromises = []) {
 9. 清空任务队列
 10. 重新调用自身，将 pending 任务的 promise 传入
  -->
-
