@@ -974,7 +974,8 @@ function doTask(pendingPromises = []) {
  -->
 
 ---
-layout: full
+layout: image-right
+image: 'https://cdn.staticaly.com/gh/jonsam-ng/image-hosting@master/20220719/image.6ge383gttf4.png'
 ---
 
 # 下次分享预告
