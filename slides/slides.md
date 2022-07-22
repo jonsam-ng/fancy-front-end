@@ -38,7 +38,7 @@ colorSchema: 'auto'
 
 微前端架构：从框架到原理
 
-- 📝 <Link to="3">微前端架构：从框架到原理（一）—— 微前端基础与 single-spa 初探</Link>
+- 📝 <Link to="3">微前端架构：从框架到原理（一）—— 微前端基础与 single-spa 解读</Link>
 
 ---
 layout: cover

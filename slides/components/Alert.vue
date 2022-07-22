@@ -21,7 +21,7 @@ export default {
 
 <style scoped>
 .alert {
-  margin: 16px 0;
+  margin-top: 16px;
   border: 1px solid transparent;
   border-radius: 8px;
   padding: 8px;

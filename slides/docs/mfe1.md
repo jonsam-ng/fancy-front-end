@@ -40,6 +40,16 @@ layout: image-right
 
 <FixedImage src="https://cdn.staticaly.com/gh/jonsam-ng/image-hosting@master/20220718/image.2m4uo50e6r20.png" r="0" b="0" w="40%"/>
 
+<br/>
+
+<Alert type="info"><span>参考：<a href='https://zq99299.github.io/note-book2/ddd/01/01.html' target='_blank'>领域驱动设计：微服务设计为什么要选择 DDD?</a></span></Alert>
+
+<!-- 
+1. 微服务：业务分治 -> 领域分治；微前端：业务分治+[视图分治]；
+2. SPA -> [MPA,微前端(灵活性)]
+3. 技术栈无关是核心价值，从微前端解决什么问题说起！
+ -->
+
 ---
 
 ## 微前端解决什么问题？
@@ -49,7 +59,7 @@ layout: image-right
 - 空间分离带来的协作复杂性
 - 时间延续带来的维护复杂性
 
-<br/><br/>
+<br/>
 
 ```mermaid
 graph LR
@@ -57,13 +67,21 @@ graph LR
     C[时间延续] -- 要求 --> D[技术栈无关]
 ```
 
+<Alert type="tip">减少人员沟通成本、技术兼容成本的最好方法是解耦合</Alert>
+
 <FixedImage src="https://cdn.staticaly.com/gh/jonsam-ng/image-hosting@master/20220718/image.49o0p8lzjgm0.png" r="-40px" b="0" w="66%" />
+
+<!-- 
+- 解决协同开发在空间分离和时间延续上的复杂性
+- 减少人员沟通成本、技术兼容成本的最好方法是解耦合，提供可使用的微服务
+- 技术栈无关是核心价值
+ -->
 
 ---
 
 ## 微前端的 3 种类型
 
-在single-spa中，有以下三种微前端类型：
+在Single-spa中，把微前端分为以下三种类型：
 
 - **applications**: 为一组**特定路由**渲染组件的微前端。
 - **parcels**: **不受路由控制**，渲染组件的微前端。
@@ -71,15 +89,21 @@ graph LR
 
 一个web应用可能包含一种或多种类型的微前端。
 
-<Alert type="info"><span>参考：<a href='https://zh-hans.single-spa.js.org/docs/microfrontends-concept/#%E5%BE%AE%E5%89%8D%E7%AB%AF%E7%B1%BB%E5%9E%8B' target='_blank'>Single-Spa微前端类型</a></span></Alert>
+<Alert type="info"><span>参考：<a href='https://zh-hans.single-spa.js.org/docs/microfrontends-concept/#%E5%BE%AE%E5%89%8D%E7%AB%AF%E7%B1%BB%E5%9E%8B' target='_blank'>Single-spa微前端类型</a></span></Alert>
 
 <FixedImage src="https://cdn.staticaly.com/gh/jonsam-ng/image-hosting@master/20220719/image.1vkv4ys6rw80.png" r="-60px" w="60%" b="0" />
+
+<!-- 
+- 是否视图相关 + 是否受控于路由
+- parcel -> 包裹
+- 原理：applications -> 最经典、最复杂
+ -->
 
 ---
 
 ## 微前端框架的核心问题是什么？
 
-微前端框架需要解决两个核心问题：
+两个核心问题：
 
 - 应用的**加载与切换**。包括路由的处理、应用加载的处理和应用入口的选择。
 - 应用的**隔离与通信**。包括 JS 的隔离、样式的隔离、父子应用和子子应用之间的通信问题。
@@ -87,6 +111,13 @@ graph LR
 <Alert type='tip'>Single-spa 主要解决了问题一，Qiankun 主要解决了问题二。</Alert>
 
 <FixedImage src='https://cdn.staticaly.com/gh/jonsam-ng/image-hosting@master/20220718/image.3zguhz3vw9c0.png' r='-80px' b="-30px" />
+
+<!-- 
+- 加载与切换: 微应用的管理及其生命周期的管理，路由匹配的机制
+- 隔离与通信: 浏览器环境的特性 -> 沙箱机制；应用场景的复杂性 -> 通信；
+- Web Components -> 类似的隔离和通信的问题。[组件层面]
+- 问题一是基础设施，问题而则是解决方案。无论解决方案怎么变，基础设施都可以复用。
+-->
 
 ---
 layout: image-left
@@ -105,6 +136,20 @@ Single-spa 的特性：
 - 应用延迟加载
 
 <Alert type="info"><span>官网：<a href='https://zh-hans.single-spa.js.org/docs/getting-started-overview' target='_blank'>快速开始</a>；GitHub：<a href='https://github.com/single-spa/single-spa' target='_blank'>Repo</a></span></Alert>
+
+<!-- 
+- 注意微前端和 MPA 的 区别。
+
+- 框架无关：框架只提供视图解决方案。视图和业务逻辑解耦。
+- vue: 一款用于**构建 Web 界面**，易学易用，性能出色且功能丰富的**框架**。
+- react: 用于**构建用户界面**的 JavaScript **库**。
+- Svelte：Svelte is a radical **new approach** to **building user interfaces**. 
+- Solid: 一个用于**构建用户界面**，简单高效、性能卓越的JavaScript**库**。
+
+- 独立部署：微前端控制视图切换（应用切换），并且为微应用提供挂载的机会。
+- 新应用与旧应用共存：微前端既解耦了技术栈，也解耦了应用依赖（依赖什么，怎么依赖，依赖什么版本）。
+- 应用延迟加载：微前端提供应用延迟加载的方法。
+-->
 
 ---
 layout: two-cols
@@ -172,7 +217,7 @@ function registerApplication(appNameOrConfig,appOrLoadApp,activeWhen,customProps
   const registration = sanitizeArguments(/*......*/);
   // 检查重复注册
   // ......
-  // 加入微应用列表，并合并默认配置
+  // 加入微应用列表，并合并默认配置，状态未 NOT_LOADED
   apps.push(assign({/*......*/},registration);
   if (isInBrowser) {
     // 调整路由监听，初始化或者应用配置变化
@@ -199,6 +244,10 @@ function unregisterApplication(appName) {
   });
 }
 ```
+
+<!-- 
+- 为什么要 reroute？应用注册之后默认会进行 load，此时需要检测当前微应用是否已经匹配到路由，如果已经匹配到路由，则需要尽快将之 bootstrap 和 mount。
+ -->
 
 ---
 layout: two-cols
@@ -227,7 +276,7 @@ layout: two-cols
 - hashchange 或者 popstate事件触发时；
 - pushState 或者 replaceState被调用时；
 - 手动调用 `triggerAppChange` 方法；
-- checkActivityFunctions方法被调用时。
+- checkActivityFunctions方法（检查哪些微应用会被路径所匹配）被调用时。
 
 ::right::
 
@@ -270,6 +319,7 @@ registerApplication({
 - update
 - unmount
 - unload
+- getAppChanges
 - 案例：Qiankun 对生命周期的应用
 
 <fixedImage src="https://cdn.staticaly.com/gh/jonsam-ng/image-hosting@master/20220719/image.7hd8rxuqgbw0.png" r="-160px" b="0" w="100%"/>
@@ -291,9 +341,12 @@ layout: two-cols
 此函数的主要工作是加载并检验 load 配置、校验配置和钩子函数、规整钩子函数等。
 
 - 函数返回 `Promise<app>`，在注册应用之后、mount 应用之前，此函数将 load 应用。
-- 此过程中状态为 LOADING_SOURCE_CODE（校验 app.loadPromise 和 app.status 之后） 和 NOT_BOOTSTRAPPED（配置和钩子函数检验完毕之后）。
+- 此过程中状态为 LOADING_SOURCE_CODE和 NOT_BOOTSTRAPPED。
 
 <Alert type="info"><span>完整函数参考：<a href="https://source.jonsam.site/single-spa/lifecycle/load/#toloadpromise" target="_blank">toLoadPromise</a></span></Alert>
+
+<Alert type="info"><span>参考：<a href="https://source.jonsam.site/react/tour/react-reconciliation-1/#schedulemicrotask-%E4%B8%8E-queuemicrotask" target="_blank">React: scheduleMicrotask 与 queueMicrotask
+</a>、<a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Guide/Using_promises#%E6%97%B6%E5%BA%8F">MDN: Promise时序</a></span></Alert>
 
 ::right::
 
@@ -301,7 +354,7 @@ layout: two-cols
 function toLoadPromise(app) {
   return Promise.resolve().then(() => { // [1]
     if (app.loadPromise) {return app.loadPromise;} // [2]
-    app.status = LOADING_SOURCE_CODE; [3]
+    app.status = LOADING_SOURCE_CODE; // [3]
     let appOpts;
 
     return (app.loadPromise = Promise.resolve() // [4]
@@ -310,7 +363,6 @@ function toLoadPromise(app) {
 
         return loadPromise.then((val) => {
           appOpts = val;
-          const type = objectType(appOpts); // [6]
           app.status = NOT_BOOTSTRAPPED; // [7]
           app.bootstrap = flattenFnArray(appOpts, "bootstrap"); // [8]
           app.mount = flattenFnArray(appOpts, "mount");
@@ -328,13 +380,12 @@ function toLoadPromise(app) {
 <!-- 
 1. load app 返回 loadPromise，Promise.resolve() 会将嵌套的 promise 摊平。
 2. 如果 loadPromise 已经存在，直接返回，不用再生成 loadPromise，执行 load 过程。
-3. 状态修改为 LOADING_SOURCE_CODE，这是因为 LOADING_SOURCE_CODE 阶段主要加载应用配置对象，配置中包含应用生命周期钩子（加载源码并不是 load 阶段，这部分由外界完成，如 qiankun 自定义的加载源代码这块以实现 prefecth 等增强功能）  
+3. 状态修改为 LOADING_SOURCE_CODE。
 4. 将 loadPromise 保存在 app 上以加锁
-5. load app promise，规整传递给 loadApp 的参数
-6. 判断 app 是 parcel 还是 application，根据 appOpts.unmountThisParcel 判断
-7. 状态由 LOADING_SOURCE_CODE 更新为 NOT_BOOTSTRAPPED
-8. 规整 bootstrap 钩子，将钩子转成 钩子数组，并且返回 promise reduce pipeline；以下类比，注意这里只是返回 promise reduce pipeline，并没有执行
-9. load 过程完毕，删除 app.loadPromise， 这个 app.loadPromise 相当于一个互斥锁
+5. load app promise，规整传递给 loadApp 的参数；LOADING_SOURCE_CODE 阶段主要加载微应用源代码，其中包含生命周期钩子，这是一个花销较大的事情（这部分由外界完成，如 qiankun 自定义的加载源代码这块以实现 prefecth 等增强功能）  
+6. 状态由 LOADING_SOURCE_CODE 更新为 NOT_BOOTSTRAPPED
+7. 规整 bootstrap 钩子，将钩子转成 钩子数组，并且返回 promise reduce pipeline；以下类比，注意这里只是返回 promise reduce pipeline，并没有执行
+8. load 过程完毕，删除 app.loadPromise， 这个 app.loadPromise 相当于一个互斥锁
 -->
 
 ---
@@ -353,7 +404,7 @@ layout: two-cols
 
 此函数的主要任务是执行 bootstrap 生命周期钩子。
 
-- 初始化时将 app.status 更新为 BOOTSTRAPPING，执行钩子任务出现错误时将状态更新为 SKIP_BECAUSE_BROKEN，钩子任务执行成功后将转台更新为 NOT_MOUNTED。
+- 初始化时将 app.status 更新为 BOOTSTRAPPING，执行钩子任务出现错误时将状态更新为 SKIP_BECAUSE_BROKEN，钩子任务执行成功后将状态更新为 NOT_MOUNTED。
 - **reasonableTime** 按照 timeout 超时时间的配置执行生命周期钩子，并且返回执行结果 promise。
 
 ::right::
@@ -361,9 +412,7 @@ layout: two-cols
 ```js
 function toBootstrapPromise(appOrParcel, hardFail) {
   return Promise.resolve().then(() => {
-    if (appOrParcel.status !== NOT_BOOTSTRAPPED) {
-      return appOrParcel;
-    }
+    // ......
     // 将状态修改为 BOOTSTRAPPING
     appOrParcel.status = BOOTSTRAPPING;
     // 如果没有 bootstrap 钩子，则使用默认的钩子
@@ -371,7 +420,7 @@ function toBootstrapPromise(appOrParcel, hardFail) {
       // Default implementation of bootstrap
       return Promise.resolve().then(successfulBootstrap);
     }
-    // 调用声明周期函数并且应用 timeout 超时时间配置
+    // 调用生命周期函数并且应用 timeout 超时时间配置
     return reasonableTime(appOrParcel, "bootstrap")
       .then(successfulBootstrap)
       // ......
@@ -443,7 +492,7 @@ layout: two-cols
 
 - 执行应用上 mount 阶段的钩子函数。执行成功后将状态更新为 MOUNTED。
 - 如果 mount 失败，尝试 unmount 应用。
-- 触发 before-first-mount 和 first-mount 事件。这些自定义事件，在源码内部并没有使用，是暴露给外部使用的。
+- 触发 before-first-mount 和 first-mount 事件。
 
 <style>
   ul li {
@@ -608,6 +657,70 @@ function finishUnloadingApp(app, unloadInfo) {
 ```
 
 ---
+layout: two-cols
+---
+
+## getAppChanges
+
+根据路由变化和应用当前状态，更新应用至新的状态。
+
+- 应用响应路由变化时利用了**状态机**的思想。
+- 路由捕获到匹配时：load 错误超时的应用重试、未 load 完成的尽快 load。
+- 路由失去匹配时：已经 unmount 的应用尽快 unload、尚未 unmount 的应用 尽快 unmount。
+
+```txt
+NOT_LOADED -> LOADING_SOURCE_CODE -> NOT_BOOTSTRAPPED
+-> BOOTSTRAPPING -> NOT_MOUNTED -> MOUNTING -> MOUNTED
+-> UPDATING -> UNMOUNTING -> UNLOADING
+```
+
+<style>
+  ul li {
+    font-size: 12px;
+  }
+</style>
+
+<FixedImage src="https://cdn.staticaly.com/gh/jonsam-ng/image-hosting@master/20220719/image.1j4nn7h9c5fk.png" l="0" b="-90px" w="40%" />
+
+::right::
+
+```js
+function getAppChanges() {
+  // ......
+  apps.forEach((app) => {
+    const appShouldBeActive = /*......*/shouldBeActive(app); // [1]
+    switch (app.status) {
+      case LOAD_ERROR: // [2]
+      case NOT_LOADED:
+      case LOADING_SOURCE_CODE:
+        if (appShouldBeActive) {appsToLoad.push(app);}
+        break;
+      case NOT_BOOTSTRAPPED:
+      case NOT_MOUNTED:
+        if (!appShouldBeActive/*......*/) { // [3]
+          appsToUnload.push(app);
+        } else if (appShouldBeActive) { // [4]
+          appsToMount.push(app);
+        }
+        break;
+      case MOUNTED: // [5]
+        if (!appShouldBeActive) {appsToUnmount.push(app);}
+        break;
+    }
+  });
+  return { appsToUnload, appsToUnmount, appsToLoad, appsToMount };
+}
+```
+
+<!-- 
+1. 判断应用是否应该被路由匹配上，即 active。
+2. 如果应用 load 失败，但应该被路由匹配，且失败超时 200 ms，则尝试重新排队 load 应用；如果应用没有 load 或者正在 load 源码，而应用被匹配上了，则排队 load 应用
+3. 如果应用还没有 bootstrap 或者 mount，应用未被路由匹配，且应用正在排队 unload，则排队 unload 应用
+4. 如果应用还没有 bootstrap 或者 mount，但是应用被匹配上，则排列 mount 应用
+5. 如果应用已经 mount，没有被路由匹配，则排列 unmount 应用。
+ -->
+
+---
 
 ## 案例：Qiankun 对生命周期的应用
 
@@ -714,7 +827,7 @@ function patchedUpdateState(updateState, methodName) {
 1. 监听 hashchange 和 popstate 事件；这里不一定是原生的 addEventListener ，因为允许被代理。
 2. 代理 history.pushState 和 history.replaceState；patchedUpdateState 需要比较 url 是否变化。
 3. 通过事件系统仿造一个 popsState 事件，以触发 reroute，并且能够使所有微应用监听到变化。
-4. s-spa 还未 start，不需要以事件的形式进行通知，直接执行 reroute。注意：即使还没有 start，仍然需要 reroute，因为 reroute 会针对 start 情况做处理
+4. s-spa 还未 start，不需要以事件的形式进行通知，直接执行 reroute。注意：即使还没有 start，仍然需要 reroute，因为 reroute 会针对 start 情况做处理（s-spa 未启动，只更新需要 load 的应用以提前加载应用）
  -->
 
 ---
@@ -859,3 +972,17 @@ function doTask(pendingPromises = []) {
 9. 清空任务队列
 10. 重新调用自身，将 pending 任务的 promise 传入
  -->
+
+---
+layout: full
+---
+
+# 下次分享预告
+
+Qiankun 源码探究之微应用加载原理
+
+- 模板加载与解析
+- 沙箱机制
+- 钩子原理
+- 应用通信机制
+- 微应用加载与切换全流程
