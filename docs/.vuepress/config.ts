@@ -57,7 +57,7 @@ export default defineConfig4CustomTheme<VdoingThemeConfig>({
     // 博主信息 (显示在首页侧边栏)
     blogger: {
       avatar:
-        "https://www.jonsam.site/wp-content/uploads/2019/10/c1fbc401c64937aaec6cb53359e7c57eabd8e477-e1570649725791.gif",
+        "https://cdn.staticaly.com/gh/jonsam-ng/image-hosting@master/oxygen-space/image.5a0lthv367k0.png",
       name: "Jonsam NG",
       slogan: "让有意义的事变得有意思，让有意思的事变得有意义",
     },
