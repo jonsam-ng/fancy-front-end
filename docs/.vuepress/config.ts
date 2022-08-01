@@ -8,7 +8,7 @@ import social from "./config/social.config";
 import head from "./config/head.config";
 
 const base = "/fancy-front-end";
-const siteName = "Fancy FE";
+const siteName = "Fancy Front End";
 
 export default defineConfig4CustomTheme<VdoingThemeConfig>({
   theme: "vdoing",
