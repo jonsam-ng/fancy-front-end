@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Markmap</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+}
+#mindmap {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.2.0/dist/style.css">
+</head>
+<body>
+<svg id="mindmap"></svg>
+<script src="https://cdn.jsdelivr.net/npm/d3@6.7.0"></script><script src="https://cdn.jsdelivr.net/npm/markmap-view@0.2.7"></script><script src="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.2.0/dist/index.umd.min.js"></script><script>(r => {
+                setTimeout(r);
+              })(() => {
+  const {
+    markmap,
+    mm
+  } = window;
+  const toolbar = new markmap.Toolbar();
+  toolbar.attach(mm);
+  const el = toolbar.render();
+  el.setAttribute('style', 'position:absolute;bottom:20px;right:20px');
+  document.body.append(el);
+})</script><script>((getMarkmap, getOptions, data) => {
+        const {
+          Markmap
+        } = getMarkmap();
+        window.mm = Markmap.create('svg#mindmap', getOptions == null ? void 0 : getOptions(), data);
+      })(() => window.markmap,null,{"t":"heading","d":1,"p":{"lines":[1,2]},"v":"参考","c":[{"t":"list_item","d":3,"p":{"lines":[3,4]},"v":"<a href=\"https://github.com/KaiyuanGao/NLP-RoadMap\">NLP-RoadMap</a>"},{"t":"list_item","d":3,"p":{"lines":[4,5]},"v":"<a href=\"https://github.com/weslynn/AlphaTree-graphic-deep-neural-network\">AlphaTree : DNN &amp;&amp; GAN &amp;&amp; NLP &amp;&amp; BIG DATA 从新手到深度学习应用工程师</a>"},{"t":"list_item","d":3,"p":{"lines":[5,6]},"v":"<a href=\"https://github.com/apachecn/ai-roadmap\">ApacheCN AI 路线图（知识树）</a>"},{"t":"list_item","d":3,"p":{"lines":[6,7]},"v":"<a href=\"https://github.com/apachecn/ailearning\">AI learning</a>"}]})</script>
+</body>
+</html>
