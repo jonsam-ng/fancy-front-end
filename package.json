@@ -43,5 +43,8 @@
     "vuepress-plugin-smplayer": "1",
     "qrcode.vue": "^1.7.0",
     "vue-core-video-player": "^0.2.0"
+  },
+  "resolutions": {
+    "eval": "0.1.6"
   }
 }
