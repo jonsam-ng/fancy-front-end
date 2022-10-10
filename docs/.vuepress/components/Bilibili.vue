@@ -28,6 +28,7 @@ export default {
     // support avid and bvid
     id: {
       type: String,
+      required: true,
     },
     danmaku: {
       type: Boolean,

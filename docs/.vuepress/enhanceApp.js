@@ -1,4 +1,5 @@
 import LastReadingPopup from "./components/LastReadingPopup.vue";
+import Bilibili from "./components/Bilibili.vue";
 import QrCodeMixin from "./plugins/qrcode";
 import LastReadingMixin from "./plugins/lastReading";
 import VideoPlayerMixin from "./plugins/videoPlayer";
@@ -13,6 +14,7 @@ export default ({
   const { options: routerOptions } = router;
 
   Vue.component(LastReadingPopup.name, LastReadingPopup);
+  Vue.component(Bilibili.name, Bilibili);
   Vue.mixin(LastReadingMixin);
   Vue.mixin(QrCodeMixin);
   Vue.mixin(VideoPlayerMixin);
