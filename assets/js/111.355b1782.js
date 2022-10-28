@@ -1,0 +1,1 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[111],{483:function(t,s,n){"use strict";n.r(s);var e=n(2),l=Object(e.a)({},(function(){var t=this._self._c;return t("ContentSlotsDistributor",{attrs:{"slot-key":this.$parent.slotKey}},[t("p",[this._v("本章将探讨在 single-spa 源码中出现的或者相关的值得学习和借鉴的内容。")])])}),[],!1,null,null,null);s.default=l.exports}}]);
