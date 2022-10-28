@@ -1,10 +1,17 @@
 import { UserPlugins } from "vuepress/config";
 import baiduCode from "./baiduCode"; // 百度统计hm码
 import dayjs from "dayjs";
+import PanguPlugin from "markdown-it-pangu";
+import TaskListsPlugin from "markdown-it-task-lists";
 
 /*****************************************************************************************
  *                                 配置插件
  ******************************************************************************************/
+
+export const markdownPlugins = (md) => {
+  md.use(TaskListsPlugin);
+  md.use(PanguPlugin);
+};
 
 export default <UserPlugins>[
   "vuepress-plugin-baidu-autopush", // 百度自动推送

@@ -2,7 +2,7 @@ import { resolve } from "path";
 import { defineConfig4CustomTheme } from "vuepress/config";
 import { VdoingThemeConfig } from "vuepress-theme-vdoing/types";
 import htmlModules from "./config/htmlModules"; // 自定义插入的html块
-import plugins from "./config/plugin.config";
+import plugins, { markdownPlugins } from "./config/plugin.config";
 import nav from "./config/nav.config";
 import social from "./config/social.config";
 import head from "./config/head.config";
@@ -73,7 +73,8 @@ export default defineConfig4CustomTheme<VdoingThemeConfig>({
   plugins,
   markdown: {
     lineNumbers: true,
-    extractHeaders: ["h2", "h3", "h4", "h5", "h6"], // 提取标题到侧边栏的级别，默认['h2', 'h3']
+    extractHeaders: ["h2", "h3", "h4", "h5", "h6"],
+    extendMarkdown: markdownPlugins,
   },
   // 监听文件变化并重新构建
   extraWatchFiles: [
